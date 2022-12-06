@@ -45,22 +45,22 @@ class Lobby {
     docID = l.docID;
     name = l.name;
     hostID = l.hostID;
-    players = l.players == null ? [] : [...l.players];
+    players = [...l.players];
     round = l.round;
     turn = l.turn;
-    questions = l.questions == null ? [] : [...l.questions];
-    answers = l.answers == null ? [] : [...l.answers];
+    questions = [...l.questions];
+    answers = [...l.answers];
   }
 
   void assign(Lobby l) {
     docID = l.docID;
     name = l.name;
     hostID = l.hostID;
-    players = l.players == null ? [] : [...l.players];
+    players = [...l.players];
     round = l.round;
     turn = l.turn;
-    questions = l.questions == null ? [] : [...l.questions];
-    answers = l.answers == null ? [] : [...l.answers];
+    questions = [...l.questions];
+    answers = [...l.answers];
   }
 
   Map<String, dynamic> toFirestoreDoc() {
