@@ -26,7 +26,8 @@ class QuestionsApp extends StatelessWidget {
           primarySwatch: Colors.amber,
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              minimumSize: const Size(175, 50),
+              minimumSize: const Size(170, 50),
+              maximumSize: const Size(220, 90),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
             ),
           ),
