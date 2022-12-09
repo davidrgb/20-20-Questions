@@ -39,7 +39,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 "20/20 Questions",
                 style: TextStyle(
                   fontSize: 36,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const SizedBox(
+                width: 250,
+                child: Divider(
                   color: Colors.amber,
+                  thickness: 2,
                 ),
               ),
               Expanded(
