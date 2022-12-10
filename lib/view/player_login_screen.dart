@@ -1,5 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:twenty_twenty_questions/controller/firebase_controller.dart';
+import 'package:twenty_twenty_questions/model/constant.dart';
+import 'package:twenty_twenty_questions/model/player.dart';
+import 'package:twenty_twenty_questions/view/lobby_list_screen.dart';
 
 class PlayerLoginScreen extends StatefulWidget {
   static const routeName = '/playerLoginScreen';
@@ -25,9 +29,7 @@ class _PlayerLoginScreenState extends State<PlayerLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
+      appBar: AppBar(),
       body: Container(
         padding: const EdgeInsets.only(
           top: 50,
@@ -131,8 +133,8 @@ class _Controller {
   String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Password required.';
-    } else if (value.length < 8) {
-      return 'Password must be at least 8 characters.';
+    } else if (value.length < 6) {
+      return 'Password must be at least 6 characters.';
     } else {
       return null;
     }
@@ -150,18 +152,34 @@ class _Controller {
     currentState.save();
 
     String email = '$username@2020questions.com';
+    Player? player;
     final methods = await auth.fetchSignInMethodsForEmail(email);
     if (methods.isEmpty) {
       await auth.createUserWithEmailAndPassword(
           email: email, password: password!);
+      player = Player(
+        docID: auth.currentUser!.uid,
+        playerID: username!,
+        creationDate: DateTime.now(),
+        answersGuessed: [],
+        friends: [],
+      );
+      await FirestoreController.createPlayer(
+          docID: auth.currentUser!.uid, player: player);
     } else {
       await auth.signInWithEmailAndPassword(email: email, password: password!);
+      player =
+          await FirestoreController.readPlayer(docID: auth.currentUser!.uid);
     }
-    
-    
-  }
 
-  void goToListScreen() async {}
+    await Navigator.pushNamed(
+      state.context,
+      LobbyListScreen.routeName,
+      arguments: {
+        ARGS.PLAYER: player,
+      },
+    );
+  }
 
   void showLoginError(String e) {}
 }
