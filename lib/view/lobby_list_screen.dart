@@ -47,7 +47,7 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
             child: Column(
               children: [
                 const SizedBox(
-                  width: 200,
+                  width: 250,
                   child: Text(
                     "Join \nor create \na lobby.",
                     style: TextStyle(
@@ -250,6 +250,20 @@ class _Controller {
 
   void joinLobby(int index) async {
     Lobby lobby = lobbies[index];
+    for (int i = 0, counterAppend = 1; i < lobby.players.length; i++) {
+      if (lobby.players[i] == state.widget.player.playerID) {
+        counterAppend++;
+        if (counterAppend == 2) {
+          state.widget.player.playerID =
+              '${state.widget.player.playerID}$counterAppend';
+        } else {
+          state.widget.player.playerID =
+              '${state.widget.player.playerID.substring(0, state.widget.player.playerID.length - 1)}_$counterAppend';
+        }
+        i = 0;
+      }
+    }
+
     lobby.players.add(state.widget.player.playerID);
     Map<String, dynamic> updateInfo = {};
     updateInfo[Lobby.PLAYERS] = lobby.players;
