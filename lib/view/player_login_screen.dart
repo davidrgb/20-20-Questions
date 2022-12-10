@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class PlayerLoginScreen extends StatefulWidget {
   static const routeName = '/playerLoginScreen';
@@ -158,7 +157,8 @@ class _Controller {
     } else {
       await auth.signInWithEmailAndPassword(email: email, password: password!);
     }
-    print(auth.currentUser);
+    
+    
   }
 
   void goToListScreen() async {}
