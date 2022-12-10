@@ -1,3 +1,5 @@
+import 'package:twenty_twenty_questions/model/player.dart';
+
 enum DocKeyLobby {
   name,
   hostID,
@@ -22,7 +24,7 @@ class Lobby {
   String? docID;
   late String name;
   late String hostID;
-  late List<dynamic> players;
+  late List<Player> players;
   late bool open;
   late int round;
   late int turn;
@@ -69,11 +71,20 @@ class Lobby {
     answers = [...l.answers];
   }
 
+    List<Map<String, dynamic>> getPlayerDocumentList() {
+    List<Map<String, dynamic>> playerDocuments = [];
+    for (int i = 0; i < players.length; i++) {
+      playerDocuments.add(players[i].toFirestoreDoc());
+    }
+    return playerDocuments;
+  }
+
   Map<String, dynamic> toFirestoreDoc() {
+    List<Map<String, dynamic>> playerDocuments = getPlayerDocumentList();
     return {
       DocKeyLobby.name.name: name,
       DocKeyLobby.hostID.name: hostID,
-      DocKeyLobby.players.name: players,
+      DocKeyLobby.players.name: playerDocuments,
       DocKeyLobby.open.name: open,
       DocKeyLobby.round.name: round,
       DocKeyLobby.turn.name: turn,
@@ -86,16 +97,25 @@ class Lobby {
     required Map<String, dynamic> doc,
     required String docID,
   }) {
-    return Lobby(
+    List<Player> players = [];
+    Lobby l = Lobby(
       docID: docID,
       name: doc[DocKeyLobby.name.name] ?? 'N/A',
       hostID: doc[DocKeyLobby.hostID.name] ?? 'N/A',
-      players: doc[DocKeyLobby.players.name] ?? [],
+      players: [],
       open: doc[DocKeyLobby.open.name] ?? true,
       round: doc[DocKeyLobby.round.name] ?? -1,
       turn: doc[DocKeyLobby.turn.name] ?? -1,
       questions: doc[DocKeyLobby.questions.name] ?? [],
       answers: doc[DocKeyLobby.answers.name] ?? [],
     );
+    List<dynamic> playerDocuments = doc[DocKeyLobby.players.name];
+    for (int i = 0; i < playerDocuments.length; i++) {
+      Player? player = Player.fromFirestoreDoc(doc: playerDocuments[i]);
+      if (player != null) players.add(player);
+    }
+    l.players = players;
+    print(l);
+    return l;
   }
 }
