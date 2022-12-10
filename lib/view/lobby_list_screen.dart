@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:twenty_twenty_questions/controller/firebase_controller.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/lobby.dart';
+import 'package:twenty_twenty_questions/model/player.dart';
 import 'package:twenty_twenty_questions/model/profile.dart';
 import 'package:twenty_twenty_questions/view/lobby_screen.dart';
 
@@ -226,11 +227,13 @@ class _Controller {
     }
     currentState.save();
 
+    Player player = Player(playerID: state.widget.profile.playerID);
+
     Lobby lobby = Lobby(
       docID: auth.currentUser!.uid,
       name: lobbyName!,
       hostID: state.widget.profile.playerID,
-      players: [state.widget.profile.playerID],
+      players: [player],
       questions: [],
       answers: [],
     );
@@ -251,11 +254,11 @@ class _Controller {
   void joinLobby(int index) async {
     Lobby lobby = lobbies[index];
     for (int i = 0, counterAppend = 1; i < lobby.players.length; i++) {
-      if (lobby.players[i] == state.widget.profile.playerID) {
+      if (lobby.players[i].playerID == state.widget.profile.playerID) {
         counterAppend++;
         if (counterAppend == 2) {
           state.widget.profile.playerID =
-              '${state.widget.profile.playerID}$counterAppend';
+              '${state.widget.profile.playerID}_$counterAppend';
         } else {
           state.widget.profile.playerID =
               '${state.widget.profile.playerID.substring(0, state.widget.profile.playerID.length - 1)}_$counterAppend';
@@ -264,9 +267,11 @@ class _Controller {
       }
     }
 
-    lobby.players.add(state.widget.profile.playerID);
+    Player player = Player(playerID: state.widget.profile.playerID);
+    lobby.players.add(player);
+    List<Map<String, dynamic>> playerDocuments = lobby.getPlayerDocumentList();
     Map<String, dynamic> updateInfo = {};
-    updateInfo[Lobby.PLAYERS] = lobby.players;
+    updateInfo[Lobby.PLAYERS] = playerDocuments;
     await FirestoreController.updateLobby(
         docID: lobby.docID!, updateInfo: updateInfo);
     await Navigator.pushNamed(
