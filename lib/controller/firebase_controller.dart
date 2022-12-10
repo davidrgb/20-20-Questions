@@ -60,25 +60,17 @@ class FirestoreController {
   }
 
   static Future<Player?> readPlayer({
-    required String playerID,
+    required String docID,
   }) async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+    var reference = await FirebaseFirestore.instance
         .collection(Constants.playerCollection)
-        .where(Player.PLAYER_ID, isEqualTo: playerID)
+        .doc(docID)
         .get();
-
-    Player? result;
-    querySnapshot.docs.forEach((doc) {
-      if (doc.data() != null) {
-        var document = doc.data() as Map<String, dynamic>;
-        var p = Player.fromFirestoreDoc(doc: document, docID: doc.id);
-        if (p != null) {
-          result = p;
-        }
-      }
-    });
-
-    return result;
+    if (reference.data() != null) {
+      return Player.fromFirestoreDoc(doc: reference.data()!, docID: docID);
+    } else {
+      return null;
+    }
   }
 
   static Future<void> updatePlayer(
