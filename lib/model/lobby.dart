@@ -81,12 +81,30 @@ class Lobby {
     return playerDocuments;
   }
 
+  List<Player> getPlayers(List<dynamic> playerDocuments) {
+    List<Player> players = [];
+    for (int i = 0; i < playerDocuments.length; i++) {
+      Player? player = Player.fromFirestoreDoc(doc: playerDocuments[i]);
+      if (player != null) players.add(player);
+    }
+    return players;
+  }
+
   List<Map<String, dynamic>> getQuestionDocumentList() {
     List<Map<String, dynamic>> questionDocuments = [];
     for (int i = 0; i < questions.length; i++) {
       questionDocuments.add(questions[i].toFirestoreDoc());
     }
     return questionDocuments;
+  }
+
+  List<Question> getQuestions(List<dynamic> questionDocuments) {
+    List<Question> questions = [];
+    for (int i = 0; i < questionDocuments.length; i++) {
+      Question? question = Question.fromFirestoreDoc(doc: questionDocuments[i]);
+      if (question != null) questions.add(question);
+    }
+    return questions;
   }
 
   List<Map<String, dynamic>> getAnswerDocumentList() {
@@ -97,8 +115,19 @@ class Lobby {
     return answerDocuments;
   }
 
+  List<Answer> getAnswers(List<dynamic> answerDocuments) {
+    List<Answer> answers = [];
+    for (int i = 0; i < answerDocuments.length; i++) {
+      Answer? answer = Answer.fromFirestoreDoc(doc: answerDocuments[i]);
+      if (answer != null) answers.add(answer);
+    }
+    return answers;
+  }
+
   Map<String, dynamic> toFirestoreDoc() {
     List<Map<String, dynamic>> playerDocuments = getPlayerDocumentList();
+    List<Map<String, dynamic>> questionDocuments = getQuestionDocumentList();
+    List<Map<String, dynamic>> answerDocuments = getAnswerDocumentList();
     return {
       DocKeyLobby.name.name: name,
       DocKeyLobby.hostID.name: hostID,
@@ -106,8 +135,8 @@ class Lobby {
       DocKeyLobby.open.name: open,
       DocKeyLobby.round.name: round,
       DocKeyLobby.turn.name: turn,
-      DocKeyLobby.questions.name: questions,
-      DocKeyLobby.answers.name: answers,
+      DocKeyLobby.questions.name: questionDocuments,
+      DocKeyLobby.answers.name: answerDocuments,
     };
   }
 
@@ -115,7 +144,6 @@ class Lobby {
     required Map<String, dynamic> doc,
     required String docID,
   }) {
-    List<Player> players = [];
     Lobby l = Lobby(
       docID: docID,
       name: doc[DocKeyLobby.name.name] ?? 'N/A',
@@ -124,16 +152,15 @@ class Lobby {
       open: doc[DocKeyLobby.open.name] ?? true,
       round: doc[DocKeyLobby.round.name] ?? -1,
       turn: doc[DocKeyLobby.turn.name] ?? -1,
-      questions: doc[DocKeyLobby.questions.name] ?? [],
-      answers: doc[DocKeyLobby.answers.name] ?? [],
+      questions: [],
+      answers: [],
     );
     List<dynamic> playerDocuments = doc[DocKeyLobby.players.name];
-    for (int i = 0; i < playerDocuments.length; i++) {
-      Player? player = Player.fromFirestoreDoc(doc: playerDocuments[i]);
-      if (player != null) players.add(player);
-    }
-    l.players = players;
-    print(l);
+    l.players = l.getPlayers(playerDocuments);
+    List<dynamic> questionDocuments = doc[DocKeyLobby.questions.name];
+    l.questions = l.getQuestions(questionDocuments);
+    List<dynamic> answerDocuments = doc[DocKeyLobby.answers.name];
+    l.answers = l.getAnswers(answerDocuments);
     return l;
   }
 }
