@@ -155,31 +155,31 @@ class _Controller {
     currentState.save();
 
     String email = '$username@2020questions.com';
-    Profile? player;
+    Profile? profile;
     final methods = await auth.fetchSignInMethodsForEmail(email);
     if (methods.isEmpty) {
       await auth.createUserWithEmailAndPassword(
           email: email, password: password!);
-      player = Profile(
+      profile = Profile(
         docID: auth.currentUser!.uid,
         playerID: username!,
         creationDate: DateTime.now(),
         answersGuessed: [],
         friends: [],
       );
-      await FirestoreController.createPlayer(
-          docID: auth.currentUser!.uid, player: player);
+      await FirestoreController.createProfile(
+          docID: auth.currentUser!.uid, profile: profile);
     } else {
       await auth.signInWithEmailAndPassword(email: email, password: password!);
-      player =
-          await FirestoreController.readPlayer(docID: auth.currentUser!.uid);
+      profile =
+          await FirestoreController.readProfile(docID: auth.currentUser!.uid);
     }
 
     await Navigator.pushNamed(
       state.context,
       LobbyListScreen.routeName,
       arguments: {
-        ARGS.PLAYER: player,
+        ARGS.PROFILE: profile,
       },
     );
   }

@@ -1,9 +1,9 @@
 class Constants {
   static const lobbyCollection = 'lobbies';
-  static const playerCollection = 'players';
+  static const profileCollection = 'profiles';
 }
 
 enum ARGS {
   LOBBY,
-  PLAYER,
+  PROFILE,
 }

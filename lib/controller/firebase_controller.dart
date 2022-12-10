@@ -49,21 +49,21 @@ class FirestoreController {
         .delete();
   }
 
-  static Future<void> createPlayer({
+  static Future<void> createProfile({
     required String docID,
-    required Profile player,
+    required Profile profile,
   }) async {
     await FirebaseFirestore.instance
-        .collection(Constants.playerCollection)
+        .collection(Constants.profileCollection)
         .doc(docID)
-        .set(player.toFirestoreDoc());
+        .set(profile.toFirestoreDoc());
   }
 
-  static Future<Profile?> readPlayer({
+  static Future<Profile?> readProfile({
     required String docID,
   }) async {
     var reference = await FirebaseFirestore.instance
-        .collection(Constants.playerCollection)
+        .collection(Constants.profileCollection)
         .doc(docID)
         .get();
     if (reference.data() != null) {
@@ -73,15 +73,15 @@ class FirestoreController {
     }
   }
 
-  static Future<void> updatePlayer(
+  static Future<void> updateProfile(
       {required String docID, required Map<String, dynamic> updateInfo}) async {
     await FirebaseFirestore.instance
-        .collection(Constants.playerCollection)
+        .collection(Constants.profileCollection)
         .doc(docID)
         .update(updateInfo);
   }
 
-  static Future<void> deletePlayer({required String docID}) async {
+  static Future<void> deleteProfile({required String docID}) async {
     var lobbyReference = await FirebaseFirestore.instance
         .collection(Constants.lobbyCollection)
         .doc(docID)
@@ -90,7 +90,7 @@ class FirestoreController {
       await deleteLobby(docID: docID);
     }
     await FirebaseFirestore.instance
-        .collection(Constants.playerCollection)
+        .collection(Constants.profileCollection)
         .doc(docID)
         .delete();
   }

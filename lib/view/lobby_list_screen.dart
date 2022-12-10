@@ -9,11 +9,11 @@ import 'package:twenty_twenty_questions/view/lobby_screen.dart';
 
 class LobbyListScreen extends StatefulWidget {
   static const routeName = '/lobbyListScreen';
-  final Profile player;
+  final Profile profile;
 
   const LobbyListScreen({
     Key? key,
-    required this.player,
+    required this.profile,
   }) : super(key: key);
 
   @override
@@ -229,8 +229,8 @@ class _Controller {
     Lobby lobby = Lobby(
       docID: auth.currentUser!.uid,
       name: lobbyName!,
-      hostID: state.widget.player.playerID,
-      players: [state.widget.player.playerID],
+      hostID: state.widget.profile.playerID,
+      players: [state.widget.profile.playerID],
       questions: [],
       answers: [],
     );
@@ -242,7 +242,7 @@ class _Controller {
       state.context,
       LobbyScreen.routeName,
       arguments: {
-        ARGS.PLAYER: state.widget.player,
+        ARGS.PROFILE: state.widget.profile,
         ARGS.LOBBY: lobby,
       },
     );
@@ -251,20 +251,20 @@ class _Controller {
   void joinLobby(int index) async {
     Lobby lobby = lobbies[index];
     for (int i = 0, counterAppend = 1; i < lobby.players.length; i++) {
-      if (lobby.players[i] == state.widget.player.playerID) {
+      if (lobby.players[i] == state.widget.profile.playerID) {
         counterAppend++;
         if (counterAppend == 2) {
-          state.widget.player.playerID =
-              '${state.widget.player.playerID}$counterAppend';
+          state.widget.profile.playerID =
+              '${state.widget.profile.playerID}$counterAppend';
         } else {
-          state.widget.player.playerID =
-              '${state.widget.player.playerID.substring(0, state.widget.player.playerID.length - 1)}_$counterAppend';
+          state.widget.profile.playerID =
+              '${state.widget.profile.playerID.substring(0, state.widget.profile.playerID.length - 1)}_$counterAppend';
         }
         i = 0;
       }
     }
 
-    lobby.players.add(state.widget.player.playerID);
+    lobby.players.add(state.widget.profile.playerID);
     Map<String, dynamic> updateInfo = {};
     updateInfo[Lobby.PLAYERS] = lobby.players;
     await FirestoreController.updateLobby(
@@ -273,7 +273,7 @@ class _Controller {
       state.context,
       LobbyScreen.routeName,
       arguments: {
-        ARGS.PLAYER: state.widget.player,
+        ARGS.PROFILE: state.widget.profile,
         ARGS.LOBBY: lobby,
       },
     );

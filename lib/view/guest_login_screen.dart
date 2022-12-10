@@ -123,7 +123,7 @@ class _Controller {
     }
     currentState.save();
 
-    Profile? player = Profile(
+    Profile? profile = Profile(
       playerID: username!,
       friends: [],
     );
@@ -133,7 +133,7 @@ class _Controller {
       state.context,
       LobbyListScreen.routeName,
       arguments: {
-        ARGS.PLAYER: player,
+        ARGS.PROFILE: profile,
       },
     );
   }

@@ -49,9 +49,9 @@ class QuestionsApp extends StatelessWidget {
               print("ARGS IS NULL FOR LOBBY LIST SCREEN");
             }
             var arguments = args as Map;
-            var player = arguments[ARGS.PLAYER];
+            var player = arguments[ARGS.PROFILE];
             return LobbyListScreen(
-              player: player,
+              profile: player,
             );
           },
           LobbyScreen.routeName: (context) {
@@ -60,10 +60,10 @@ class QuestionsApp extends StatelessWidget {
               print("ARGS IS NULL FOR LOBBY SCREEN");
             }
             var arguments = args as Map;
-            var player = arguments[ARGS.PLAYER];
+            var profile = arguments[ARGS.PROFILE];
             var lobby = arguments[ARGS.LOBBY];
             return LobbyScreen(
-              player: player,
+              profile: profile,
               lobby: lobby,
             );
           },
