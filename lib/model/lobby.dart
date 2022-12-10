@@ -1,4 +1,6 @@
+import 'package:twenty_twenty_questions/model/answer.dart';
 import 'package:twenty_twenty_questions/model/player.dart';
+import 'package:twenty_twenty_questions/model/question.dart';
 
 enum DocKeyLobby {
   name,
@@ -28,19 +30,19 @@ class Lobby {
   late bool open;
   late int round;
   late int turn;
-  late List<dynamic> questions;
-  late List<dynamic> answers;
+  late List<Question> questions;
+  late List<Answer> answers;
 
   Lobby({
     this.docID,
     this.name = '',
     this.hostID = '',
-    List<dynamic>? players,
+    List<Player>? players,
     this.open = true,
     this.round = 1,
     this.turn = 1,
-    List<dynamic>? questions,
-    List<dynamic>? answers,
+    List<Question>? questions,
+    List<Answer>? answers,
   }) {
     this.players = players == null ? [] : [...players];
     this.questions = questions == null ? [] : [...questions];
@@ -71,12 +73,28 @@ class Lobby {
     answers = [...l.answers];
   }
 
-    List<Map<String, dynamic>> getPlayerDocumentList() {
+  List<Map<String, dynamic>> getPlayerDocumentList() {
     List<Map<String, dynamic>> playerDocuments = [];
     for (int i = 0; i < players.length; i++) {
       playerDocuments.add(players[i].toFirestoreDoc());
     }
     return playerDocuments;
+  }
+
+  List<Map<String, dynamic>> getQuestionDocumentList() {
+    List<Map<String, dynamic>> questionDocuments = [];
+    for (int i = 0; i < questions.length; i++) {
+      questionDocuments.add(questions[i].toFirestoreDoc());
+    }
+    return questionDocuments;
+  }
+
+  List<Map<String, dynamic>> getAnswerDocumentList() {
+    List<Map<String, dynamic>> answerDocuments = [];
+    for (int i = 0; i < answers.length; i++) {
+      answerDocuments.add(answers[i].toFirestoreDoc());
+    }
+    return answerDocuments;
   }
 
   Map<String, dynamic> toFirestoreDoc() {
