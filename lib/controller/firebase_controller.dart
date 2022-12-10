@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/lobby.dart';
-import 'package:twenty_twenty_questions/model/player.dart';
+import 'package:twenty_twenty_questions/model/profile.dart';
 
 class FirestoreController {
   static Future<void> createLobby({
@@ -51,7 +51,7 @@ class FirestoreController {
 
   static Future<void> createPlayer({
     required String docID,
-    required Player player,
+    required Profile player,
   }) async {
     await FirebaseFirestore.instance
         .collection(Constants.playerCollection)
@@ -59,7 +59,7 @@ class FirestoreController {
         .set(player.toFirestoreDoc());
   }
 
-  static Future<Player?> readPlayer({
+  static Future<Profile?> readPlayer({
     required String docID,
   }) async {
     var reference = await FirebaseFirestore.instance
@@ -67,7 +67,7 @@ class FirestoreController {
         .doc(docID)
         .get();
     if (reference.data() != null) {
-      return Player.fromFirestoreDoc(doc: reference.data()!, docID: docID);
+      return Profile.fromFirestoreDoc(doc: reference.data()!, docID: docID);
     } else {
       return null;
     }

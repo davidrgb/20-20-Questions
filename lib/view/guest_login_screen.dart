@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
-import 'package:twenty_twenty_questions/model/player.dart';
+import 'package:twenty_twenty_questions/model/profile.dart';
 import 'package:twenty_twenty_questions/view/lobby_list_screen.dart';
 
 class GuestLoginScreen extends StatefulWidget {
@@ -123,7 +123,7 @@ class _Controller {
     }
     currentState.save();
 
-    Player? player = Player(
+    Profile? player = Profile(
       playerID: username!,
       friends: [],
     );

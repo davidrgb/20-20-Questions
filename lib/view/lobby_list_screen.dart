@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:twenty_twenty_questions/controller/firebase_controller.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/lobby.dart';
-import 'package:twenty_twenty_questions/model/player.dart';
+import 'package:twenty_twenty_questions/model/profile.dart';
 import 'package:twenty_twenty_questions/view/lobby_screen.dart';
 
 class LobbyListScreen extends StatefulWidget {
   static const routeName = '/lobbyListScreen';
-  final Player player;
+  final Profile player;
 
   const LobbyListScreen({
     Key? key,

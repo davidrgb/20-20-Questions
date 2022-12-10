@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:twenty_twenty_questions/controller/firebase_controller.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
-import 'package:twenty_twenty_questions/model/player.dart';
+import 'package:twenty_twenty_questions/model/profile.dart';
 import 'package:twenty_twenty_questions/view/lobby_list_screen.dart';
 
 class PlayerLoginScreen extends StatefulWidget {
@@ -155,12 +155,12 @@ class _Controller {
     currentState.save();
 
     String email = '$username@2020questions.com';
-    Player? player;
+    Profile? player;
     final methods = await auth.fetchSignInMethodsForEmail(email);
     if (methods.isEmpty) {
       await auth.createUserWithEmailAndPassword(
           email: email, password: password!);
-      player = Player(
+      player = Profile(
         docID: auth.currentUser!.uid,
         playerID: username!,
         creationDate: DateTime.now(),

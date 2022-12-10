@@ -1,4 +1,4 @@
-enum DocKeyPlayer {
+enum DocKeyProfile {
   playerID,
   creationDate,
   lifetimeScore,
@@ -8,7 +8,7 @@ enum DocKeyPlayer {
   friends,
 }
 
-class Player {
+class Profile {
   static const PLAYER_ID = 'playerID';
   static const CREATION_DATE = 'creationDate';
   static const LIFETIME_SCORE = 'lifetimeScore';
@@ -26,7 +26,7 @@ class Player {
   late int gamesPlayed;
   late List<dynamic> friends;
 
-  Player({
+  Profile({
     this.docID,
     this.playerID = '',
     this.creationDate,
@@ -40,7 +40,7 @@ class Player {
     this.friends = friends == null ? [] : [...friends];
   }
 
-  Player.clone(Player p) {
+  Profile.clone(Profile p) {
     docID = p.docID;
     playerID = p.playerID;
     creationDate = p.creationDate;
@@ -51,7 +51,7 @@ class Player {
     friends = [...p.friends];
   }
 
-  void assign(Player p) {
+  void assign(Profile p) {
     docID = p.docID;
     playerID = p.playerID;
     creationDate = p.creationDate;
@@ -64,31 +64,31 @@ class Player {
 
   Map<String, dynamic> toFirestoreDoc() {
     return {
-      DocKeyPlayer.playerID.name: playerID,
-      DocKeyPlayer.creationDate.name: creationDate,
-      DocKeyPlayer.lifetimeScore.name: lifetimeScore,
-      DocKeyPlayer.answersGuessed.name: answersGuessed,
-      DocKeyPlayer.wins.name: wins,
-      DocKeyPlayer.gamesPlayed.name: gamesPlayed,
-      DocKeyPlayer.friends.name: friends,
+      DocKeyProfile.playerID.name: playerID,
+      DocKeyProfile.creationDate.name: creationDate,
+      DocKeyProfile.lifetimeScore.name: lifetimeScore,
+      DocKeyProfile.answersGuessed.name: answersGuessed,
+      DocKeyProfile.wins.name: wins,
+      DocKeyProfile.gamesPlayed.name: gamesPlayed,
+      DocKeyProfile.friends.name: friends,
     };
   }
 
-  static Player? fromFirestoreDoc(
+  static Profile? fromFirestoreDoc(
       {required Map<String, dynamic> doc, required String docID}) {
-    return Player(
+    return Profile(
       docID: docID,
-      playerID: doc[DocKeyPlayer.playerID.name] ?? 'N/A',
-      creationDate: doc[DocKeyPlayer.creationDate.name] != null
+      playerID: doc[DocKeyProfile.playerID.name] ?? 'N/A',
+      creationDate: doc[DocKeyProfile.creationDate.name] != null
           ? DateTime.fromMillisecondsSinceEpoch(
-              doc[DocKeyPlayer.creationDate.name].millisecondsSinceEpoch,
+              doc[DocKeyProfile.creationDate.name].millisecondsSinceEpoch,
             )
           : DateTime.now(),
-      lifetimeScore: doc[DocKeyPlayer.lifetimeScore.name] ?? 0,
-      answersGuessed: doc[DocKeyPlayer.answersGuessed.name] ?? [],
-      wins: doc[DocKeyPlayer.wins.name] ?? 0,
-      gamesPlayed: doc[DocKeyPlayer.gamesPlayed.name] ?? 0,
-      friends: doc[DocKeyPlayer.friends.name] ?? [],
+      lifetimeScore: doc[DocKeyProfile.lifetimeScore.name] ?? 0,
+      answersGuessed: doc[DocKeyProfile.answersGuessed.name] ?? [],
+      wins: doc[DocKeyProfile.wins.name] ?? 0,
+      gamesPlayed: doc[DocKeyProfile.gamesPlayed.name] ?? 0,
+      friends: doc[DocKeyProfile.friends.name] ?? [],
     );
   }
 }
