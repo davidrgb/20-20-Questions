@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:twenty_twenty_questions/controller/firebase_controller.dart';
+import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/lobby.dart';
 import 'package:twenty_twenty_questions/model/player.dart';
+import 'package:twenty_twenty_questions/view/lobby_screen.dart';
 
 class LobbyListScreen extends StatefulWidget {
   static const routeName = '/lobbyListScreen';
@@ -39,6 +41,7 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
           child: Container(
             padding: const EdgeInsets.only(
               top: 50,
+              bottom: 50,
             ),
             width: MediaQuery.of(context).size.width,
             child: Column(
@@ -56,7 +59,7 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                   height: 20,
                 ),
                 const SizedBox(
-                  width: 200,
+                  width: 300,
                   child: Divider(
                     color: Colors.amber,
                     thickness: 1,
@@ -97,51 +100,75 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                   height: 20,
                 ),
                 const SizedBox(
-                  width: 200,
+                  width: 300,
                   child: Divider(
                     color: Colors.amber,
                     thickness: 1,
                   ),
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
                 controller.lobbies.isNotEmpty
                     ? RefreshIndicator(
                         onRefresh: controller.refresh,
-                        child: ListView.separated(
-                          itemCount: controller.lobbies.length,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              color: Colors.amber,
-                              child: ListTile(
-                                title: Text(controller.lobbies[index].name),
-                                subtitle: Text(
-                                    'Created by ${controller.lobbies[index].hostID}'),
-                                onTap: () => controller.joinLobby(index),
-                              ),
-                            );
-                          },
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          separatorBuilder: (context, index) => const Divider(
-                            color: Colors.amber,
+                        child: SizedBox(
+                          width: 300,
+                          child: ListView.separated(
+                            itemCount: controller.lobbies.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                decoration: const BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(5),
+                                    topRight: Radius.circular(5),
+                                    bottomLeft: Radius.circular(5),
+                                    bottomRight: Radius.circular(5),
+                                  ),
+                                  color: Colors.amber,
+                                ),
+                                child: ListTile(
+                                  title: Text(
+                                    controller.lobbies[index].name,
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    'Created by ${controller.lobbies[index].hostID}',
+                                    style:
+                                        const TextStyle(color: Colors.black87),
+                                  ),
+                                  onTap: () => controller.joinLobby(index),
+                                ),
+                              );
+                            },
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            separatorBuilder: (context, index) => const Divider(
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       )
-                    : Column(
-                        children: [
-                          const Text(
-                            'No lobbies to join.',
-                            style: TextStyle(
-                              fontSize: 18,
-                            ),
+                    : RefreshIndicator(
+                        onRefresh: controller.refresh,
+                        child: SizedBox(
+                          width: 300,
+                          child: ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            children: const [
+                              Center(
+                                child: Text(
+                                  'No lobbies to join.',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: controller.refresh,
-                            child: const Text("Refresh"),
-                          ),
-                        ],
+                        ),
                       ),
               ],
             ),
@@ -154,12 +181,12 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
 
 class _Controller {
   late _LobbyListScreenState state;
+  FirebaseAuth auth = FirebaseAuth.instance;
   List<Lobby> lobbies = [];
   bool isLoading = false;
   String? lobbyName;
 
   _Controller(this.state) {
-    print(FirebaseAuth.instance.currentUser!.uid);
     refresh();
   }
 
@@ -192,9 +219,49 @@ class _Controller {
     if (value != null) lobbyName = value;
   }
 
-  void createLobby() {}
+  void createLobby() async {
+    FormState? currentState = state.lobbyNameKey.currentState;
+    if (currentState == null || !currentState.validate()) {
+      return;
+    }
+    currentState.save();
 
-  void joinLobby(int index) {}
+    Lobby lobby = Lobby(
+      docID: auth.currentUser!.uid,
+      name: lobbyName!,
+      hostID: state.widget.player.playerID,
+      players: [state.widget.player.playerID],
+      questions: [],
+      answers: [],
+    );
+    await FirestoreController.createLobby(
+        docID: auth.currentUser!.uid, lobby: lobby);
+    currentState.reset();
 
-  void showLoginError(String e) {}
+    await Navigator.pushNamed(
+      state.context,
+      LobbyScreen.routeName,
+      arguments: {
+        ARGS.PLAYER: state.widget.player,
+        ARGS.LOBBY: lobby,
+      },
+    );
+  }
+
+  void joinLobby(int index) async {
+    Lobby lobby = lobbies[index];
+    lobby.players.add(state.widget.player.playerID);
+    Map<String, dynamic> updateInfo = {};
+    updateInfo[Lobby.PLAYERS] = lobby.players;
+    await FirestoreController.updateLobby(
+        docID: lobby.docID!, updateInfo: updateInfo);
+    await Navigator.pushNamed(
+      state.context,
+      LobbyScreen.routeName,
+      arguments: {
+        ARGS.PLAYER: state.widget.player,
+        ARGS.LOBBY: lobby,
+      },
+    );
+  }
 }
