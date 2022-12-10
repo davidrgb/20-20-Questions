@@ -2,6 +2,7 @@ enum DocKeyLobby {
   name,
   hostID,
   players,
+  open,
   round,
   turn,
   questions,
@@ -12,6 +13,7 @@ class Lobby {
   static const NAME = 'name';
   static const HOST_ID = 'hostID';
   static const PLAYERS = 'players';
+  static const OPEN = 'open';
   static const ROUND = 'round';
   static const TURN = 'turn';
   static const QUESTIONS = 'questions';
@@ -21,6 +23,7 @@ class Lobby {
   late String name;
   late String hostID;
   late List<dynamic> players;
+  late bool open;
   late int round;
   late int turn;
   late List<dynamic> questions;
@@ -31,6 +34,7 @@ class Lobby {
     this.name = '',
     this.hostID = '',
     List<dynamic>? players,
+    this.open = true,
     this.round = 1,
     this.turn = 1,
     List<dynamic>? questions,
@@ -46,6 +50,7 @@ class Lobby {
     name = l.name;
     hostID = l.hostID;
     players = [...l.players];
+    open = l.open;
     round = l.round;
     turn = l.turn;
     questions = [...l.questions];
@@ -57,6 +62,7 @@ class Lobby {
     name = l.name;
     hostID = l.hostID;
     players = [...l.players];
+    open = l.open;
     round = l.round;
     turn = l.turn;
     questions = [...l.questions];
@@ -68,6 +74,7 @@ class Lobby {
       DocKeyLobby.name.name: name,
       DocKeyLobby.hostID.name: hostID,
       DocKeyLobby.players.name: players,
+      DocKeyLobby.open.name: open,
       DocKeyLobby.round.name: round,
       DocKeyLobby.turn.name: turn,
       DocKeyLobby.questions.name: questions,
@@ -84,6 +91,7 @@ class Lobby {
       name: doc[DocKeyLobby.name.name] ?? 'N/A',
       hostID: doc[DocKeyLobby.hostID.name] ?? 'N/A',
       players: doc[DocKeyLobby.players.name] ?? [],
+      open: doc[DocKeyLobby.open.name] ?? true,
       round: doc[DocKeyLobby.round.name] ?? -1,
       turn: doc[DocKeyLobby.turn.name] ?? -1,
       questions: doc[DocKeyLobby.questions.name] ?? [],
