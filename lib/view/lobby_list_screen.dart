@@ -6,6 +6,7 @@ import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/lobby.dart';
 import 'package:twenty_twenty_questions/model/player.dart';
 import 'package:twenty_twenty_questions/model/profile.dart';
+import 'package:twenty_twenty_questions/view/home_screen.dart';
 import 'package:twenty_twenty_questions/view/lobby_screen.dart';
 
 class LobbyListScreen extends StatefulWidget {
@@ -38,6 +39,18 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
     return WillPopScope(
       onWillPop: () => Future.value(false),
       child: Scaffold(
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 20,
+            horizontal: 10,
+          ),
+          child: FloatingActionButton(
+            onPressed: controller.logOut,
+            backgroundColor: Colors.amber,
+            child: const Icon(Icons.close),
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
         body: SingleChildScrollView(
           child: Container(
             padding: const EdgeInsets.only(
@@ -281,6 +294,14 @@ class _Controller {
         ARGS.PROFILE: state.widget.profile,
         ARGS.LOBBY: lobby,
       },
+    );
+  }
+
+  void logOut() async {
+    auth.signOut();
+    await Navigator.pushNamed(
+      state.context,
+      HomeScreen.routeName,
     );
   }
 }
