@@ -16,7 +16,7 @@ class PlayerLoginScreen extends StatefulWidget {
 
 class _PlayerLoginScreenState extends State<PlayerLoginScreen> {
   late _Controller controller;
-  GlobalKey<FormState> phoneNumberKey = GlobalKey();
+  GlobalKey<FormState> loginKey = GlobalKey();
 
   void render(fn) => setState(fn);
 
@@ -30,35 +30,38 @@ class _PlayerLoginScreenState extends State<PlayerLoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Container(
-        padding: const EdgeInsets.only(
-          top: 50,
-        ),
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          children: [
-            const SizedBox(
-              width: 200,
-              child: Text(
-                "Login or create a new profile.",
-                style: TextStyle(
-                  fontSize: 36,
+      body: SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.only(
+            top: 50,
+          ),
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            children: [
+              const SizedBox(
+                width: 200,
+                child: Text(
+                  "Login or create a new profile.",
+                  style: TextStyle(
+                    fontSize: 36,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            const SizedBox(
-              width: 200,
-              child: Divider(
-                color: Colors.amber,
-                thickness: 1,
+              const SizedBox(
+                height: 20,
               ),
-            ),
-            Expanded(
-              child: Form(
-                key: phoneNumberKey,
+              const SizedBox(
+                width: 200,
+                child: Divider(
+                  color: Colors.amber,
+                  thickness: 1,
+                ),
+              ),
+              const SizedBox(
+                height: 100,
+              ),
+              Form(
+                key: loginKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -101,8 +104,8 @@ class _PlayerLoginScreenState extends State<PlayerLoginScreen> {
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -145,7 +148,7 @@ class _Controller {
   }
 
   void login() async {
-    FormState? currentState = state.phoneNumberKey.currentState;
+    FormState? currentState = state.loginKey.currentState;
     if (currentState == null || !currentState.validate()) {
       return;
     }
