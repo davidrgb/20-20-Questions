@@ -71,7 +71,7 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                       ),
                       children: [
                         TextSpan(
-                          text: widget.profile.playerID,
+                          text: widget.profile.username,
                           style: const TextStyle(color: Colors.amber),
                         ),
                       ],
@@ -247,12 +247,13 @@ class _Controller {
     }
     currentState.save();
 
-    Player player = Player(playerID: state.widget.profile.playerID);
+    Player player = Player(username: state.widget.profile.username);
 
     Lobby lobby = Lobby(
       docID: auth.currentUser!.uid,
       name: lobbyName!,
-      hostID: state.widget.profile.playerID,
+      hostID: state.widget.profile.username,
+      playerIDs: [state.widget.profile.playerID],
       players: [player],
       questions: [],
       answers: [],
@@ -281,22 +282,27 @@ class _Controller {
         .doc(lobbies[index].docID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       final snapshot = await transaction.get(lobbyReference);
-      List<dynamic> playerDocuments = snapshot.get("players");
+      List<dynamic> playerIDs = snapshot.get(Lobby.PLAYER_IDS);
+      playerIDs.add(joinProfile.playerID);
+      List<dynamic> playerDocuments = snapshot.get(Lobby.PLAYERS);
       for (int i = 0, counterAppend = 1; i < playerDocuments.length; i++) {
-        if (playerDocuments[i]['playerID'] == joinProfile.playerID) {
+        if (playerDocuments[i][Player.USERNAME] == joinProfile.username) {
           counterAppend++;
           if (counterAppend == 2) {
-            joinProfile.playerID = '${joinProfile.playerID}_$counterAppend';
+            joinProfile.username = '${joinProfile.username}_$counterAppend';
           } else {
-            joinProfile.playerID =
-                '${joinProfile.playerID.substring(0, joinProfile.playerID.length - 1)}_$counterAppend';
+            joinProfile.username =
+                '${joinProfile.username.substring(0, joinProfile.username.length - 1)}_$counterAppend';
           }
           i = 0;
         }
       }
-      Player player = Player(playerID: state.widget.profile.playerID);
+      Player player = Player(username: state.widget.profile.username);
       playerDocuments.add(player.toFirestoreDoc());
-      transaction.update(lobbyReference, {"players": playerDocuments});
+      transaction.update(lobbyReference, {
+        Lobby.PLAYER_IDS: playerIDs,
+        Lobby.PLAYERS: playerDocuments,
+      });
     });
     await Navigator.pushNamed(
       state.context,

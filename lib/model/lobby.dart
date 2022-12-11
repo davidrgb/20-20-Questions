@@ -5,6 +5,7 @@ import 'package:twenty_twenty_questions/model/question.dart';
 enum DocKeyLobby {
   name,
   hostID,
+  playerIDs,
   players,
   open,
   round,
@@ -16,6 +17,7 @@ enum DocKeyLobby {
 class Lobby {
   static const NAME = 'name';
   static const HOST_ID = 'hostID';
+  static const PLAYER_IDS = 'playerIDs';
   static const PLAYERS = 'players';
   static const OPEN = 'open';
   static const ROUND = 'round';
@@ -26,6 +28,7 @@ class Lobby {
   String? docID;
   late String name;
   late String hostID;
+  late List<String> playerIDs;
   late List<Player> players;
   late bool open;
   late int round;
@@ -37,6 +40,7 @@ class Lobby {
     this.docID,
     this.name = '',
     this.hostID = '',
+    List<String>? playerIDs,
     List<Player>? players,
     this.open = true,
     this.round = 1,
@@ -44,6 +48,7 @@ class Lobby {
     List<Question>? questions,
     List<Answer>? answers,
   }) {
+    this.playerIDs = playerIDs == null ? [] : [...playerIDs];
     this.players = players == null ? [] : [...players];
     this.questions = questions == null ? [] : [...questions];
     this.answers = answers == null ? [] : [...answers];
@@ -53,6 +58,7 @@ class Lobby {
     docID = l.docID;
     name = l.name;
     hostID = l.hostID;
+    playerIDs = [...l.playerIDs];
     players = [...l.players];
     open = l.open;
     round = l.round;
@@ -65,6 +71,7 @@ class Lobby {
     docID = l.docID;
     name = l.name;
     hostID = l.hostID;
+    playerIDs = [...l.playerIDs];
     players = [...l.players];
     open = l.open;
     round = l.round;
@@ -131,6 +138,7 @@ class Lobby {
     return {
       DocKeyLobby.name.name: name,
       DocKeyLobby.hostID.name: hostID,
+      DocKeyLobby.playerIDs.name: playerIDs,
       DocKeyLobby.players.name: playerDocuments,
       DocKeyLobby.open.name: open,
       DocKeyLobby.round.name: round,
@@ -148,6 +156,7 @@ class Lobby {
       docID: docID,
       name: doc[DocKeyLobby.name.name] ?? 'N/A',
       hostID: doc[DocKeyLobby.hostID.name] ?? 'N/A',
+      playerIDs: [],
       players: [],
       open: doc[DocKeyLobby.open.name] ?? true,
       round: doc[DocKeyLobby.round.name] ?? -1,
@@ -155,6 +164,10 @@ class Lobby {
       questions: [],
       answers: [],
     );
+    List<dynamic> playerIDDocuments = doc[DocKeyLobby.playerIDs.name];
+    for (int i = 0; i < playerIDDocuments.length; i++) {
+      l.playerIDs.add(playerIDDocuments[i]);
+    }
     List<dynamic> playerDocuments = doc[DocKeyLobby.players.name];
     l.players = l.getPlayers(playerDocuments);
     List<dynamic> questionDocuments = doc[DocKeyLobby.questions.name];

@@ -124,7 +124,8 @@ class _Controller {
     currentState.save();
 
     Profile? profile = Profile(
-      playerID: username!,
+      playerID: auth.currentUser!.uid,
+      username: username!,
       friends: [],
     );
     await auth.signInAnonymously();

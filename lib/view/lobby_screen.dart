@@ -4,7 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/lobby.dart';
+import 'package:twenty_twenty_questions/model/player.dart';
 import 'package:twenty_twenty_questions/model/profile.dart';
+import 'package:twenty_twenty_questions/view/game_screen.dart';
 
 class LobbyScreen extends StatefulWidget {
   static const routeName = '/lobbyScreen';
@@ -84,7 +86,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                       Padding(
                         padding: const EdgeInsets.all(10),
                         child: Text(
-                          widget.lobby.players[i].playerID,
+                          widget.lobby.players[i].username,
                           style: const TextStyle(fontSize: 18),
                         ),
                       ),
@@ -123,18 +125,38 @@ class _Controller {
     createListener();
   }
 
-  void createListener() {
-    final reference =
-        FirebaseFirestore.instance.collection(Constants.lobbyCollection).doc(state.widget.lobby.docID);
-    listener = reference.snapshots().listen((event) {
+  void createListener() async {
+    final reference = FirebaseFirestore.instance
+        .collection(Constants.lobbyCollection)
+        .doc(state.widget.lobby.docID);
+    listener = reference.snapshots().listen((event) async {
       var document = event.data() as Map<String, dynamic>;
       var l = Lobby.fromFirestoreDoc(doc: document, docID: event.id);
       if (l != null) state.widget.lobby.assign(l);
+      if (state.widget.lobby.open == false) {
+        await Navigator.pushNamed(
+          state.context,
+          GameScreen.routeName,
+          arguments: {
+            ARGS.PROFILE: state.widget.profile,
+            ARGS.LOBBY: state.widget.lobby,
+          },
+        );
+        listener.cancel();
+      }
       state.render(() {});
     });
   }
 
-  void start() async {}
+  void start() async {
+    final lobbyReference = FirebaseFirestore.instance
+        .collection(Constants.lobbyCollection)
+        .doc(state.widget.lobby.docID);
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(lobbyReference);
+      transaction.update(lobbyReference, {Lobby.OPEN: false});
+    });
+  }
 
   Future<bool> leave() async {
     listener.cancel();
@@ -143,13 +165,23 @@ class _Controller {
         .doc(state.widget.lobby.docID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       final snapshot = await transaction.get(lobbyReference);
-      List<dynamic> playerDocuments = snapshot.get("players");
+      List<dynamic> playerIDs = snapshot.get(Lobby.PLAYER_IDS);
+      for (int i = 0; i < playerIDs.length; i++) {
+        if (playerIDs[i] == state.widget.profile.playerID) {
+          playerIDs.removeAt(i);
+        }
+      }
+      List<dynamic> playerDocuments = snapshot.get(Lobby.PLAYERS);
       for (int i = 0; i < playerDocuments.length; i++) {
-        if (playerDocuments[i]['playerID'] == state.widget.profile.playerID) {
+        if (playerDocuments[i][Player.USERNAME] ==
+            state.widget.profile.username) {
           playerDocuments.removeAt(i);
         }
       }
-      transaction.update(lobbyReference, {"players": playerDocuments});
+      transaction.update(lobbyReference, {
+        Lobby.PLAYER_IDS: playerIDs,
+        Lobby.PLAYERS: playerDocuments,
+      });
     });
     return true;
   }

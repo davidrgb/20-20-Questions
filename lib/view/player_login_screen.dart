@@ -162,7 +162,8 @@ class _Controller {
           email: email, password: password!);
       profile = Profile(
         docID: auth.currentUser!.uid,
-        playerID: username!,
+        playerID: auth.currentUser!.uid,
+        username: username!,
         creationDate: DateTime.now(),
         answersGuessed: [],
         friends: [],
