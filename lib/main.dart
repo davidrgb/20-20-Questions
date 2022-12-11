@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
+import 'package:twenty_twenty_questions/view/game_screen.dart';
 import 'package:twenty_twenty_questions/view/guest_login_screen.dart';
 import 'package:twenty_twenty_questions/view/home_screen.dart';
 import 'package:twenty_twenty_questions/view/lobby_list_screen.dart';
@@ -63,6 +64,19 @@ class QuestionsApp extends StatelessWidget {
             var profile = arguments[ARGS.PROFILE];
             var lobby = arguments[ARGS.LOBBY];
             return LobbyScreen(
+              profile: profile,
+              lobby: lobby,
+            );
+          },
+          GameScreen.routeName: (context) {
+            Object? args = ModalRoute.of(context)?.settings.arguments;
+            if (args == null) {
+              print("ARGS IS NULL FOR LOBBY SCREEN");
+            }
+            var arguments = args as Map;
+            var profile = arguments[ARGS.PROFILE];
+            var lobby = arguments[ARGS.LOBBY];
+            return GameScreen(
               profile: profile,
               lobby: lobby,
             );
