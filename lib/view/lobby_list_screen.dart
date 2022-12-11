@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:twenty_twenty_questions/controller/firebase_controller.dart';
@@ -128,68 +129,67 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                     thickness: 1,
                   ),
                 ),
+                const SizedBox(
+                  height: 20,
+                ),
                 controller.lobbies.isNotEmpty
-                    ? RefreshIndicator(
-                        onRefresh: controller.refresh,
-                        child: SizedBox(
-                          width: 300,
-                          child: ListView.separated(
-                            itemCount: controller.lobbies.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                decoration: const BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(5),
-                                    topRight: Radius.circular(5),
-                                    bottomLeft: Radius.circular(5),
-                                    bottomRight: Radius.circular(5),
-                                  ),
-                                  color: Colors.amber,
-                                ),
-                                child: ListTile(
-                                  title: Text(
-                                    controller.lobbies[index].name,
-                                    style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
+                    ? SizedBox(
+                        width: 300,
+                        child: Column(
+                          children: [
+                            for (int i = 0; i < controller.lobbies.length; i++)
+                              Column(
+                                children: [
+                                  Container(
+                                    decoration: const BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(5),
+                                        topRight: Radius.circular(5),
+                                        bottomLeft: Radius.circular(5),
+                                        bottomRight: Radius.circular(5),
+                                      ),
+                                      color: Colors.amber,
+                                    ),
+                                    child: ListTile(
+                                      title: Text(
+                                        controller.lobbies[i].name,
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        'Created by ${controller.lobbies[i].hostID}',
+                                        style: const TextStyle(
+                                            color: Colors.black87),
+                                      ),
+                                      onTap: () => controller.joinLobby(i),
                                     ),
                                   ),
-                                  subtitle: Text(
-                                    'Created by ${controller.lobbies[index].hostID}',
-                                    style:
-                                        const TextStyle(color: Colors.black87),
+                                  const SizedBox(
+                                    height: 10,
                                   ),
-                                  onTap: () => controller.joinLobby(index),
-                                ),
-                              );
-                            },
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            separatorBuilder: (context, index) => const Divider(
-                              color: Colors.white,
-                            ),
-                          ),
+                                ],
+                              ),
+                          ],
                         ),
                       )
-                    : RefreshIndicator(
-                        onRefresh: controller.refresh,
-                        child: SizedBox(
-                          width: 300,
-                          child: ListView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            children: const [
-                              Center(
-                                child: Text(
-                                  'No lobbies to join.',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                  ),
+                    : SizedBox(
+                        width: 300,
+                        child: ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          children: const [
+                            Center(
+                              child: Text(
+                                'No lobbies to join.',
+                                style: TextStyle(
+                                  fontSize: 18,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
               ],
@@ -207,26 +207,24 @@ class _Controller {
   List<Lobby> lobbies = [];
   bool isLoading = false;
   String? lobbyName;
+  late StreamSubscription<QuerySnapshot<Map<String, dynamic>>> listener;
 
   _Controller(this.state) {
-    refresh();
+    createListener();
   }
 
-  Future<void> refresh() async {
-    state.render(() {
-      isLoading = true;
+  void createListener() {
+    final reference =
+        FirebaseFirestore.instance.collection(Constants.lobbyCollection);
+    listener = reference.snapshots().listen((event) {
+      lobbies.clear();
+      for (var doc in event.docs) {
+        var document = doc.data() as Map<String, dynamic>;
+        var l = Lobby.fromFirestoreDoc(doc: document, docID: doc.id);
+        if (l != null && l.open == true) lobbies.add(l);
+      }
+      state.render(() {});
     });
-    try {
-      lobbies = await FirestoreController.readLobbies();
-      state.render(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      state.render(() {
-        isLoading = false;
-      });
-      print(e);
-    }
   }
 
   String? validateLobbyName(String? value) {
@@ -242,6 +240,7 @@ class _Controller {
   }
 
   void createLobby() async {
+    listener.cancel();
     FormState? currentState = state.lobbyNameKey.currentState;
     if (currentState == null || !currentState.validate()) {
       return;
@@ -269,20 +268,23 @@ class _Controller {
         ARGS.PROFILE: state.widget.profile,
         ARGS.LOBBY: lobby,
       },
-    );
+    ).then((data) {
+      createListener();
+    });
   }
 
   void joinLobby(int index) async {
+    listener.cancel();
     Lobby lobby = lobbies[index];
+    Profile joinProfile = Profile.clone(state.widget.profile);
     for (int i = 0, counterAppend = 1; i < lobby.players.length; i++) {
-      if (lobby.players[i].playerID == state.widget.profile.playerID) {
+      if (lobby.players[i].playerID == joinProfile.playerID) {
         counterAppend++;
         if (counterAppend == 2) {
-          state.widget.profile.playerID =
-              '${state.widget.profile.playerID}_$counterAppend';
+          joinProfile.playerID = '${joinProfile.playerID}_$counterAppend';
         } else {
-          state.widget.profile.playerID =
-              '${state.widget.profile.playerID.substring(0, state.widget.profile.playerID.length - 1)}_$counterAppend';
+          joinProfile.playerID =
+              '${joinProfile.playerID.substring(0, joinProfile.playerID.length - 1)}_$counterAppend';
         }
         i = 0;
       }
@@ -299,10 +301,12 @@ class _Controller {
       state.context,
       LobbyScreen.routeName,
       arguments: {
-        ARGS.PROFILE: state.widget.profile,
+        ARGS.PROFILE: joinProfile,
         ARGS.LOBBY: lobby,
       },
-    );
+    ).then((data) {
+      createListener();
+    });
   }
 
   void logOut() async {
