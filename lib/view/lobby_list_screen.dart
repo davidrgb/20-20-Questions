@@ -275,34 +275,35 @@ class _Controller {
 
   void joinLobby(int index) async {
     listener.cancel();
-    Lobby lobby = lobbies[index];
     Profile joinProfile = Profile.clone(state.widget.profile);
-    for (int i = 0, counterAppend = 1; i < lobby.players.length; i++) {
-      if (lobby.players[i].playerID == joinProfile.playerID) {
-        counterAppend++;
-        if (counterAppend == 2) {
-          joinProfile.playerID = '${joinProfile.playerID}_$counterAppend';
-        } else {
-          joinProfile.playerID =
-              '${joinProfile.playerID.substring(0, joinProfile.playerID.length - 1)}_$counterAppend';
+    final lobbyReference = FirebaseFirestore.instance
+        .collection(Constants.lobbyCollection)
+        .doc(lobbies[index].docID);
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(lobbyReference);
+      List<dynamic> playerDocuments = snapshot.get("players");
+      for (int i = 0, counterAppend = 1; i < playerDocuments.length; i++) {
+        if (playerDocuments[i]['playerID'] == joinProfile.playerID) {
+          counterAppend++;
+          if (counterAppend == 2) {
+            joinProfile.playerID = '${joinProfile.playerID}_$counterAppend';
+          } else {
+            joinProfile.playerID =
+                '${joinProfile.playerID.substring(0, joinProfile.playerID.length - 1)}_$counterAppend';
+          }
+          i = 0;
         }
-        i = 0;
       }
-    }
-
-    Player player = Player(playerID: state.widget.profile.playerID);
-    lobby.players.add(player);
-    List<Map<String, dynamic>> playerDocuments = lobby.getPlayerDocumentList();
-    Map<String, dynamic> updateInfo = {};
-    updateInfo[Lobby.PLAYERS] = playerDocuments;
-    await FirestoreController.updateLobby(
-        docID: lobby.docID!, updateInfo: updateInfo);
+      Player player = Player(playerID: state.widget.profile.playerID);
+      playerDocuments.add(player.toFirestoreDoc());
+      transaction.update(lobbyReference, {"players": playerDocuments});
+    });
     await Navigator.pushNamed(
       state.context,
       LobbyScreen.routeName,
       arguments: {
         ARGS.PROFILE: joinProfile,
-        ARGS.LOBBY: lobby,
+        ARGS.LOBBY: lobbies[index],
       },
     ).then((data) {
       createListener();

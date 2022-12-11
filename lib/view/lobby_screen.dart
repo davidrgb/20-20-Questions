@@ -1,5 +1,8 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:twenty_twenty_questions/controller/firebase_controller.dart';
+import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/lobby.dart';
 import 'package:twenty_twenty_questions/model/profile.dart';
 
@@ -114,21 +117,40 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
 class _Controller {
   late _LobbyScreenState state;
-  _Controller(this.state);
+  late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> listener;
+
+  _Controller(this.state) {
+    createListener();
+  }
+
+  void createListener() {
+    final reference =
+        FirebaseFirestore.instance.collection(Constants.lobbyCollection).doc(state.widget.lobby.docID);
+    listener = reference.snapshots().listen((event) {
+      var document = event.data() as Map<String, dynamic>;
+      var l = Lobby.fromFirestoreDoc(doc: document, docID: event.id);
+      if (l != null) state.widget.lobby.assign(l);
+      state.render(() {});
+    });
+  }
 
   void start() async {}
 
   Future<bool> leave() async {
-    for (int i = 0; i < state.widget.lobby.players.length; i++) {
-      if (state.widget.lobby.players[i].playerID ==
-          state.widget.profile.playerID) state.widget.lobby.players.removeAt(i);
-    }
-    List<Map<String, dynamic>> playerDocuments =
-        state.widget.lobby.getPlayerDocumentList();
-    Map<String, dynamic> updateInfo = {};
-    updateInfo[Lobby.PLAYERS] = playerDocuments;
-    await FirestoreController.updateLobby(
-        docID: state.widget.lobby.docID!, updateInfo: updateInfo);
+    listener.cancel();
+    final lobbyReference = FirebaseFirestore.instance
+        .collection(Constants.lobbyCollection)
+        .doc(state.widget.lobby.docID);
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(lobbyReference);
+      List<dynamic> playerDocuments = snapshot.get("players");
+      for (int i = 0; i < playerDocuments.length; i++) {
+        if (playerDocuments[i]['playerID'] == state.widget.profile.playerID) {
+          playerDocuments.removeAt(i);
+        }
+      }
+      transaction.update(lobbyReference, {"players": playerDocuments});
+    });
     return true;
   }
 }
