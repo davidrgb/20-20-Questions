@@ -153,6 +153,9 @@ class _Controller {
   }
 
   void start() async {
+    if (state.widget.lobby.players.length < 2) {
+      return;
+    }
     final lobbyReference = FirebaseFirestore.instance
         .collection(Constants.lobbyCollection)
         .doc(state.widget.lobby.docID);

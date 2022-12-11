@@ -185,7 +185,10 @@ class _Controller {
   bool hasSubmittedAnswer() {
     bool submitted = false;
     for (int i = 0; i < state.widget.lobby.players.length; i++) {
-      if (state.widget.lobby.players[i].answer.isNotEmpty) submitted = true;
+      if (state.widget.lobby.players[i].username ==
+          state.widget.profile.username) {
+        if (state.widget.lobby.players[i].answer.isNotEmpty) submitted = true;
+      }
     }
     return submitted;
   }
