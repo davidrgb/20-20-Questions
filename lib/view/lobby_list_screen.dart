@@ -60,12 +60,20 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
             width: MediaQuery.of(context).size.width,
             child: Column(
               children: [
-                const SizedBox(
+                SizedBox(
                   width: 250,
-                  child: Text(
-                    "Join \nor create \na lobby.",
-                    style: TextStyle(
-                      fontSize: 36,
+                  child: RichText(
+                    text: TextSpan(
+                      text: 'Join \nor create \na lobby,\n',
+                      style: const TextStyle(
+                        fontSize: 36,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: widget.profile.playerID,
+                          style: const TextStyle(color: Colors.amber),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -83,13 +91,13 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                   height: 20,
                 ),
                 SizedBox(
-                  width: 200,
+                  width: 250,
                   child: Form(
                     key: lobbyNameKey,
                     child: Row(
                       children: [
                         SizedBox(
-                          width: 150,
+                          width: 200,
                           child: TextFormField(
                             decoration: const InputDecoration(
                               focusedBorder: OutlineInputBorder(
