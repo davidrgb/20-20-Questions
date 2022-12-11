@@ -102,12 +102,16 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                ElevatedButton(
-                  onPressed: controller.start,
-                  child: const Text(
-                    'Start',
-                  ),
-                ),
+                widget.lobby.hostID == widget.profile.username
+                    ? ElevatedButton(
+                        onPressed: controller.start,
+                        child: const Text(
+                          'Start',
+                        ),
+                      )
+                    : const SizedBox(
+                        height: 0,
+                      ),
               ],
             ),
           ),
