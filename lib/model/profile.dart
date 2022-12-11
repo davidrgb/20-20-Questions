@@ -1,5 +1,6 @@
 enum DocKeyProfile {
   playerID,
+  username,
   creationDate,
   lifetimeScore,
   answersGuessed,
@@ -10,6 +11,7 @@ enum DocKeyProfile {
 
 class Profile {
   static const PLAYER_ID = 'playerID';
+  static const USERNAME = 'username';
   static const CREATION_DATE = 'creationDate';
   static const LIFETIME_SCORE = 'lifetimeScore';
   static const ANSWERS_GUESSED = 'answersGuessed';
@@ -19,6 +21,7 @@ class Profile {
 
   String? docID;
   late String playerID;
+  late String username;
   DateTime? creationDate;
   late int lifetimeScore;
   late List<dynamic> answersGuessed;
@@ -29,6 +32,7 @@ class Profile {
   Profile({
     this.docID,
     this.playerID = '',
+    this.username = '',
     this.creationDate,
     this.lifetimeScore = 0,
     List<dynamic>? answersGuessed,
@@ -43,6 +47,7 @@ class Profile {
   Profile.clone(Profile p) {
     docID = p.docID;
     playerID = p.playerID;
+    username = p.username;
     creationDate = p.creationDate;
     lifetimeScore = p.lifetimeScore;
     answersGuessed = [...p.answersGuessed];
@@ -54,6 +59,7 @@ class Profile {
   void assign(Profile p) {
     docID = p.docID;
     playerID = p.playerID;
+    username = p.username;
     creationDate = p.creationDate;
     lifetimeScore = p.lifetimeScore;
     answersGuessed = [...p.answersGuessed];
@@ -65,6 +71,7 @@ class Profile {
   Map<String, dynamic> toFirestoreDoc() {
     return {
       DocKeyProfile.playerID.name: playerID,
+      DocKeyProfile.username.name: username,
       DocKeyProfile.creationDate.name: creationDate,
       DocKeyProfile.lifetimeScore.name: lifetimeScore,
       DocKeyProfile.answersGuessed.name: answersGuessed,
@@ -79,6 +86,7 @@ class Profile {
     return Profile(
       docID: docID,
       playerID: doc[DocKeyProfile.playerID.name] ?? 'N/A',
+      username: doc[DocKeyProfile.username.name] ?? 'N/A',
       creationDate: doc[DocKeyProfile.creationDate.name] != null
           ? DateTime.fromMillisecondsSinceEpoch(
               doc[DocKeyProfile.creationDate.name].millisecondsSinceEpoch,
