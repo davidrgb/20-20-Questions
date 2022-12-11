@@ -46,18 +46,27 @@ class _LobbyScreenState extends State<LobbyScreen> {
             width: MediaQuery.of(context).size.width,
             child: Column(
               children: [
-                const SizedBox(
-                  width: 200,
-                  child: Text(
-                    "Press Start when all players have joined.",
-                    style: TextStyle(
-                      fontSize: 36,
+                SizedBox(
+                  width: 250,
+                  child: RichText(
+                    text: const TextSpan(
+                      text: 'Press ',
+                      style: TextStyle(
+                        fontSize: 36,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: 'Start',
+                          style: TextStyle(color: Colors.amber),
+                        ),
+                        TextSpan(text: ' when all players have joined.'),
+                      ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 const SizedBox(
-                  width: 250,
+                  width: 300,
                   child: Divider(
                     color: Colors.amber,
                     thickness: 2,
@@ -111,12 +120,15 @@ class _Controller {
 
   Future<bool> leave() async {
     for (int i = 0; i < state.widget.lobby.players.length; i++) {
-      if (state.widget.lobby.players[i].playerID == state.widget.profile.playerID) state.widget.lobby.players.removeAt(i);
+      if (state.widget.lobby.players[i].playerID ==
+          state.widget.profile.playerID) state.widget.lobby.players.removeAt(i);
     }
-    List<Map<String, dynamic>> playerDocuments = state.widget.lobby.getPlayerDocumentList();
+    List<Map<String, dynamic>> playerDocuments =
+        state.widget.lobby.getPlayerDocumentList();
     Map<String, dynamic> updateInfo = {};
     updateInfo[Lobby.PLAYERS] = playerDocuments;
-    await FirestoreController.updateLobby(docID: state.widget.lobby.docID!, updateInfo: updateInfo);
+    await FirestoreController.updateLobby(
+        docID: state.widget.lobby.docID!, updateInfo: updateInfo);
     return true;
   }
 }
