@@ -1,28 +1,28 @@
 enum DocKeyAnswer {
   questionID,
-  playerID,
+  username,
   answer,
 }
 
 class Answer {
   static const QUESTION_ID = 'questionID';
-  static const PLAYER_ID = 'playerID';
+  static const USERNAME = 'username';
   static const ANSWER = 'answer';
 
   late String questionID;
-  late String playerID;
+  late String username;
   late String answer;
 
   Answer({
     required this.questionID,
-    required this.playerID,
+    required this.username,
     required this.answer,
   });
 
   Map<String, dynamic> toFirestoreDoc() {
     return {
       DocKeyAnswer.questionID.name: questionID,
-      DocKeyAnswer.playerID.name: playerID,
+      DocKeyAnswer.username.name: username,
       DocKeyAnswer.answer.name: answer,
     };
   }
@@ -32,7 +32,7 @@ class Answer {
   }) {
     return Answer(
       questionID: doc[DocKeyAnswer.questionID.name] ?? 'N/A',
-      playerID: doc[DocKeyAnswer.playerID.name] ?? 'N/A',
+      username: doc[DocKeyAnswer.username.name] ?? 'N/A',
       answer: doc[DocKeyAnswer.answer.name] ?? 'N/A',
     );
   }
