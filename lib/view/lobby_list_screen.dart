@@ -201,6 +201,13 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
   }
 }
 
+AlertDialog _duplicateUsernameAlert(BuildContext context, String username) {
+  return AlertDialog(
+    title: Text('$username has already joined the lobby.'),
+    content: const Text('Please change your username to join.'),
+  );
+}
+
 class _Controller {
   late _LobbyListScreenState state;
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -276,25 +283,27 @@ class _Controller {
 
   void joinLobby(int index) async {
     listener.cancel();
-    Profile joinProfile = Profile.clone(state.widget.profile);
     final lobbyReference = FirebaseFirestore.instance
         .collection(Constants.lobbyCollection)
         .doc(lobbies[index].docID);
+    bool duplicateUsername = false;
     FirebaseFirestore.instance.runTransaction((transaction) async {
       final snapshot = await transaction.get(lobbyReference);
       List<dynamic> playerIDs = snapshot.get(Lobby.PLAYER_IDS);
-      playerIDs.add(joinProfile.playerID);
+      playerIDs.add(state.widget.profile.playerID);
       List<dynamic> playerDocuments = snapshot.get(Lobby.PLAYERS);
-      for (int i = 0, counterAppend = 1; i < playerDocuments.length; i++) {
-        if (playerDocuments[i][Player.USERNAME] == joinProfile.username) {
-          counterAppend++;
-          if (counterAppend == 2) {
-            joinProfile.username = '${joinProfile.username}_$counterAppend';
-          } else {
-            joinProfile.username =
-                '${joinProfile.username.substring(0, joinProfile.username.length - 1)}_$counterAppend';
-          }
-          i = 0;
+      for (int i = 0; i < playerDocuments.length; i++) {
+        if (playerDocuments[i][Player.USERNAME] ==
+            state.widget.profile.username) {
+          showDialog(
+            context: state.context,
+            builder: (BuildContext context) {
+              return _duplicateUsernameAlert(
+                  context, state.widget.profile.username);
+            },
+          );
+          duplicateUsername = true;
+          return;
         }
       }
       Player player = Player(username: state.widget.profile.username);
@@ -304,16 +313,20 @@ class _Controller {
         Lobby.PLAYERS: playerDocuments,
       });
     });
-    await Navigator.pushNamed(
-      state.context,
-      LobbyScreen.routeName,
-      arguments: {
-        ARGS.PROFILE: joinProfile,
-        ARGS.LOBBY: lobbies[index],
-      },
-    ).then((data) {
+    if (duplicateUsername) {
       createListener();
-    });
+    } else {
+      await Navigator.pushNamed(
+        state.context,
+        LobbyScreen.routeName,
+        arguments: {
+          ARGS.PROFILE: state.widget.profile,
+          ARGS.LOBBY: lobbies[index],
+        },
+      ).then((data) {
+        createListener();
+      });
+    }
   }
 
   void logOut() async {
