@@ -121,6 +121,11 @@ class _LobbyScreenState extends State<LobbyScreen> {
   }
 }
 
+AlertDialog _atLeastTwoPlayersAlert(BuildContext context) {
+  return const AlertDialog(
+      title: Text('There must be at least two players to start.'));
+}
+
 class _Controller {
   late _LobbyScreenState state;
   late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> listener;
@@ -154,14 +159,24 @@ class _Controller {
 
   void start() async {
     if (state.widget.lobby.players.length < 2) {
-      return;
+      showDialog(
+        context: state.context,
+        builder: (BuildContext context) {
+          return _atLeastTwoPlayersAlert(context);
+        },
+      );
     }
     final lobbyReference = FirebaseFirestore.instance
         .collection(Constants.lobbyCollection)
         .doc(state.widget.lobby.docID);
     FirebaseFirestore.instance.runTransaction((transaction) async {
       final snapshot = await transaction.get(lobbyReference);
-      transaction.update(lobbyReference, {Lobby.OPEN: false});
+      List<dynamic> playerDocuments = snapshot.get(Lobby.PLAYERS);
+      playerDocuments.shuffle();
+      transaction.update(lobbyReference, {
+        Lobby.OPEN: false,
+        Lobby.PLAYERS: playerDocuments,
+      });
     });
   }
 
