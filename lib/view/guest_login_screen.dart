@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:twenty_twenty_questions/controller/firebase_controller.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/profile.dart';
 import 'package:twenty_twenty_questions/view/lobby_list_screen.dart';
@@ -95,6 +96,26 @@ class _GuestLoginScreenState extends State<GuestLoginScreen> {
   }
 }
 
+AlertDialog _profileWithUsernameExistsAlert(
+    BuildContext context, String username) {
+  return AlertDialog(
+    title: RichText(
+      text: TextSpan(
+        text: 'The username ',
+        style: const TextStyle(fontSize: 24),
+        children: [
+          TextSpan(
+            text: username,
+            style: const TextStyle(color: Colors.amber),
+          ),
+          const TextSpan(text: ' is used by a profile.'),
+        ],
+      ),
+    ),
+    content: const Text('Please choose a different username.'),
+  );
+}
+
 class _Controller {
   late _GuestLoginScreenState state;
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -123,12 +144,24 @@ class _Controller {
     }
     currentState.save();
 
+    await auth.signInAnonymously();
     Profile? profile = Profile(
       playerID: auth.currentUser!.uid,
       username: username!,
       friends: [],
     );
-    await auth.signInAnonymously();
+
+    if (await FirestoreController.checkIfProfileExists(
+        username: profile.username)) {
+      showDialog(
+        context: state.context,
+        builder: (BuildContext context) {
+          return _profileWithUsernameExistsAlert(context, profile.username);
+        },
+      );
+      await auth.signOut();
+      return;
+    }
 
     await Navigator.pushNamed(
       state.context,

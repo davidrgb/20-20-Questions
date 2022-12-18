@@ -94,4 +94,17 @@ class FirestoreController {
         .doc(docID)
         .delete();
   }
+
+  static Future<bool> checkIfProfileExists({required String username}) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(Constants.profileCollection)
+        .where(Profile.USERNAME, isEqualTo: username)
+        .limit(1)
+        .get();
+
+    if (querySnapshot.size > 0) {
+      return true;
+    }
+    return false;
+  }
 }
