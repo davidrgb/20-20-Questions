@@ -350,7 +350,7 @@ class _GameScreenState extends State<GameScreen> {
             IconButton(
               onPressed: () => controller.submitResponse('unsure'),
               icon: const Icon(
-                Icons.question_mark,
+                Icons.question_mark_rounded,
                 color: Colors.white,
                 size: 40,
               ),
