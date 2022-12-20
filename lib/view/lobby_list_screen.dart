@@ -68,6 +68,7 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                       text: 'Join \nor create \na lobby,\n',
                       style: const TextStyle(
                         fontSize: 36,
+                        color: Colors.white,
                       ),
                       children: [
                         TextSpan(

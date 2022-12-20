@@ -54,6 +54,7 @@ class _GameScreenState extends State<GameScreen> {
             text: 'Enter something for the other players to ',
             style: TextStyle(
               fontSize: 36,
+              color: Colors.white,
             ),
             children: [
               TextSpan(
@@ -118,16 +119,10 @@ class _GameScreenState extends State<GameScreen> {
         return Container(child: showWaitingForOtherPlayers());
       } else {
         if (!controller.hasResponded()) {
-          if (!controller.isGuess()) {
-            if (!controller.isBeingGuessed()) {
+          if (controller.isGuess()) {
+            if (controller.isBeingGuessed()) {
               return Container(child: showSubmitResponse());
             } else {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return _anotherPlayerIsGuessing(context);
-                },
-              );
               return Container(child: showWaitingForOtherPlayers());
             }
           } else {
@@ -148,6 +143,7 @@ class _GameScreenState extends State<GameScreen> {
             text: 'Enter a ',
             style: TextStyle(
               fontSize: 36,
+              color: Colors.white,
             ),
             children: [
               TextSpan(
@@ -382,6 +378,7 @@ class _GameScreenState extends State<GameScreen> {
           text: const TextSpan(
             style: TextStyle(
               fontSize: 36,
+              color: Colors.white,
             ),
             children: [
               TextSpan(
@@ -408,6 +405,7 @@ class _GameScreenState extends State<GameScreen> {
                 text: const TextSpan(
                   style: TextStyle(
                     fontSize: 24,
+                    color: Colors.white,
                   ),
                   children: [
                     TextSpan(
@@ -422,15 +420,31 @@ class _GameScreenState extends State<GameScreen> {
                 text: TextSpan(
                   style: const TextStyle(
                     fontSize: 24,
+                    color: Colors.white,
                   ),
                   children: [
                     const TextSpan(
                       text: 'Question',
                       style: TextStyle(color: Colors.amber),
                     ),
-                    TextSpan(
-                        text:
-                            ': ${widget.lobby.questions[widget.lobby.questions.length - 1].question}'),
+                    widget.lobby.questions[widget.lobby.questions.length - 1]
+                                .guess &&
+                            widget
+                                    .lobby
+                                    .questions[
+                                        widget.lobby.questions.length - 1]
+                                    .askerUsername !=
+                                widget.profile.username &&
+                            widget
+                                    .lobby
+                                    .questions[
+                                        widget.lobby.questions.length - 1]
+                                    .guessPlayerUsername !=
+                                widget.profile.username
+                        ? const TextSpan(text: ': ???')
+                        : TextSpan(
+                            text:
+                                ': ${widget.lobby.questions[widget.lobby.questions.length - 1].question}'),
                   ],
                 ),
               ),
@@ -487,11 +501,26 @@ class _GameScreenState extends State<GameScreen> {
       ),
       content: SingleChildScrollView(
         child: Column(
-          children: controller.getPlayerDetails(index).isEmpty
-              ? [
-                  const Text('Nothing to see right now.'),
-                ]
-              : controller.getPlayerDetails(index),
+          children: [
+            Column(
+              children: controller.getPlayerDetails(index).isEmpty
+                  ? [
+                      const Text('Nothing to see right now.'),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                    ]
+                  : controller.getPlayerDetails(index),
+            ),
+            Center(
+              child: Text(
+                'Score - ${widget.lobby.players[index].score}',
+                style: const TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -674,7 +703,7 @@ class _Controller {
     for (int i = 0; i < state.widget.lobby.players.length; i++) {
       if (state.widget.lobby.players[i].username ==
           state.widget.profile.username) {
-        if (state.widget.lobby.turn % state.widget.lobby.players.length ==
+        if ((state.widget.lobby.turn - 1) % state.widget.lobby.players.length ==
             state.widget.lobby.players[i].turnOrder - 1) {
           if (guessedAllCorrectly()) {
             skipQuestion();
@@ -1050,11 +1079,18 @@ class _Controller {
     FirebaseFirestore.instance.runTransaction((transaction) async {
       final snapshot = await transaction.get(lobbyReference);
       List<dynamic> playerDocuments = snapshot.get(Lobby.PLAYERS);
-      for (int i = 0; i < playerDocuments.length; i++) {
+      for (int i = playerDocuments.length - 1; i >= 0; i--) {
         Player? player = Player.fromFirestoreDoc(doc: playerDocuments[i]);
         if (player != null &&
             player.username == state.widget.profile.username) {
           playerDocuments.removeAt(i);
+        }
+      }
+      for (int i = 0; i < playerDocuments.length; i++) {
+        Player? player = Player.fromFirestoreDoc(doc: playerDocuments[i]);
+        if (player != null) {
+          player.turnOrder = i + 1;
+          playerDocuments[i] = player.toFirestoreDoc();
         }
       }
       transaction.update(lobbyReference, {Lobby.PLAYERS: playerDocuments});

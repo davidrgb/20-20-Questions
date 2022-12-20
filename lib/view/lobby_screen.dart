@@ -58,6 +58,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                       text: 'Press ',
                       style: TextStyle(
                         fontSize: 36,
+                        color: Colors.white,
                       ),
                       children: [
                         TextSpan(
@@ -223,10 +224,14 @@ class _Controller {
           playerDocuments.removeAt(i);
         }
       }
-      transaction.update(lobbyReference, {
-        Lobby.PLAYER_IDS: playerIDs,
-        Lobby.PLAYERS: playerDocuments,
-      });
+      if (playerDocuments.isEmpty) {
+        transaction.delete(lobbyReference);
+      } else {
+        transaction.update(lobbyReference, {
+          Lobby.PLAYER_IDS: playerIDs,
+          Lobby.PLAYERS: playerDocuments,
+        });
+      }
     });
     return true;
   }
