@@ -217,6 +217,7 @@ class _GameScreenState extends State<GameScreen> {
                       text: 'Guessing ',
                       style: const TextStyle(
                         fontSize: 24,
+                        color: Colors.white,
                       ),
                       children: [
                         TextSpan(
@@ -249,6 +250,7 @@ class _GameScreenState extends State<GameScreen> {
           text: 'Pick a ',
           style: TextStyle(
             fontSize: 24,
+            color: Colors.white,
           ),
           children: [
             TextSpan(
@@ -294,6 +296,7 @@ class _GameScreenState extends State<GameScreen> {
           text: TextSpan(
             style: const TextStyle(
               fontSize: 24,
+              color: Colors.white,
             ),
             children: [
               const TextSpan(
@@ -302,7 +305,28 @@ class _GameScreenState extends State<GameScreen> {
               ),
               TextSpan(
                   text:
-                      ': ${widget.lobby.questions[widget.lobby.questions.length - 1].question}'),
+                      ' - ${widget.lobby.questions[widget.lobby.questions.length - 1].question}'),
+            ],
+          ),
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        RichText(
+          text: TextSpan(
+            text: 'Your ',
+            style: const TextStyle(
+              fontSize: 24,
+              color: Colors.white,
+            ),
+            children: [
+              const TextSpan(
+                text: 'Answer',
+                style: TextStyle(color: Colors.amber),
+              ),
+              TextSpan(
+                  text:
+                      ' - ${controller.getPlayerAnswer()}'),
             ],
           ),
         ),
@@ -441,10 +465,10 @@ class _GameScreenState extends State<GameScreen> {
                                         widget.lobby.questions.length - 1]
                                     .guessPlayerUsername !=
                                 widget.profile.username
-                        ? const TextSpan(text: ': ???')
+                        ? const TextSpan(text: ' - ???')
                         : TextSpan(
                             text:
-                                ': ${widget.lobby.questions[widget.lobby.questions.length - 1].question}'),
+                                ' - ${widget.lobby.questions[widget.lobby.questions.length - 1].question}'),
                   ],
                 ),
               ),
@@ -490,6 +514,7 @@ class _GameScreenState extends State<GameScreen> {
           text: 'Answers from ',
           style: const TextStyle(
             fontSize: 24,
+            color: Colors.white,
           ),
           children: [
             TextSpan(
@@ -534,6 +559,7 @@ class _GameScreenState extends State<GameScreen> {
             text: 'Game ',
             style: TextStyle(
               fontSize: 36,
+              color: Colors.white,
             ),
             children: [
               TextSpan(
@@ -1067,6 +1093,15 @@ class _Controller {
       }
     }
     return buttons;
+  }
+
+  String getPlayerAnswer() {
+    for (int i = 0; i < state.widget.lobby.players.length; i++) {
+      if (state.widget.lobby.players[i].username == state.widget.profile.username) {
+        return state.widget.lobby.players[i].answer;
+      }
+    }
+    return '';
   }
 
   Future<bool> leave() async {
