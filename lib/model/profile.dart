@@ -24,10 +24,10 @@ class Profile {
   late String username;
   DateTime? creationDate;
   late int lifetimeScore;
-  late List<dynamic> answersGuessed;
+  late List<String> answersGuessed;
   late int wins;
   late int gamesPlayed;
-  late List<dynamic> friends;
+  late List<String> friends;
 
   Profile({
     this.docID,
@@ -35,10 +35,10 @@ class Profile {
     this.username = '',
     this.creationDate,
     this.lifetimeScore = 0,
-    List<dynamic>? answersGuessed,
+    List<String>? answersGuessed,
     this.wins = 0,
     this.gamesPlayed = 0,
-    List<dynamic>? friends,
+    List<String>? friends,
   }) {
     this.answersGuessed = answersGuessed == null ? [] : [...answersGuessed];
     this.friends = friends == null ? [] : [...friends];
@@ -68,6 +68,22 @@ class Profile {
     friends = [...p.friends];
   }
 
+  List<String> getAnswersGuessed(List<dynamic> answersGuessedDocuments) {
+    List<String> answersGuessed = [];
+    for (int i = 0; i < answersGuessedDocuments.length; i++) {
+      answersGuessed.add(answersGuessedDocuments[i]);
+    }
+    return answersGuessed;
+  }
+
+  List<String> getFriends(List<dynamic> friendsDocuments) {
+    List<String> friends = [];
+    for (int i = 0; i < friendsDocuments.length; i++) {
+      friends.add(friendsDocuments[i]);
+    }
+    return friends;
+  }
+
   Map<String, dynamic> toFirestoreDoc() {
     return {
       DocKeyProfile.playerID.name: playerID,
@@ -83,7 +99,7 @@ class Profile {
 
   static Profile? fromFirestoreDoc(
       {required Map<String, dynamic> doc, required String docID}) {
-    return Profile(
+    Profile p = Profile(
       docID: docID,
       playerID: doc[DocKeyProfile.playerID.name] ?? 'N/A',
       username: doc[DocKeyProfile.username.name] ?? 'N/A',
@@ -93,10 +109,13 @@ class Profile {
             )
           : DateTime.now(),
       lifetimeScore: doc[DocKeyProfile.lifetimeScore.name] ?? 0,
-      answersGuessed: doc[DocKeyProfile.answersGuessed.name] ?? [],
       wins: doc[DocKeyProfile.wins.name] ?? 0,
       gamesPlayed: doc[DocKeyProfile.gamesPlayed.name] ?? 0,
-      friends: doc[DocKeyProfile.friends.name] ?? [],
     );
+    List<dynamic> answersGuessedDocuments = doc[DocKeyProfile.answersGuessed.name];
+    p.answersGuessed = p.getAnswersGuessed(answersGuessedDocuments);
+    List<dynamic> friendsDocuments = doc[DocKeyProfile.friends.name];
+    p.friends = p.getFriends(friendsDocuments);
+    return p;
   }
 }

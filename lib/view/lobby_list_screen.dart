@@ -203,7 +203,21 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
 
 AlertDialog _duplicateUsernameAlert(BuildContext context, String username) {
   return AlertDialog(
-    title: Text('$username has already joined the lobby.'),
+    title: RichText(
+      text: TextSpan(
+        text: username,
+        style: const TextStyle(
+          fontSize: 24,
+          color: Colors.amber,
+        ),
+        children: const [
+          TextSpan(
+            text: ' has already joined the lobby.',
+            style: TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
+    ),
     content: const Text('Please change your username to join.'),
   );
 }
@@ -287,7 +301,7 @@ class _Controller {
         .collection(Constants.lobbyCollection)
         .doc(lobbies[index].docID);
     bool duplicateUsername = false;
-    FirebaseFirestore.instance.runTransaction((transaction) async {
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
       final snapshot = await transaction.get(lobbyReference);
       List<dynamic> playerIDs = snapshot.get(Lobby.PLAYER_IDS);
       playerIDs.add(state.widget.profile.playerID);

@@ -3,29 +3,33 @@ import 'package:twenty_twenty_questions/model/response.dart';
 enum DocKeyQuestion {
   questionID,
   question,
+  askerUsername,
   guess,
-  guessPlayerID,
+  guessPlayerUsername,
   responses
 }
 
 class Question {
   static const QUESTION_ID = 'questionID';
   static const QUESTION = 'question';
+  static const ASKER_USERNAME = 'askerUsername';
   static const GUESS = 'guess';
-  static const GUESS_PLAYER_ID = 'guessPlayerID';
+  static const GUESS_PLAYER_USERNAME = 'guessPlayerUsername';
   static const RESPONSES = 'responses';
 
-  late String questionID;
-  late String question;
+  late int questionID;
+  late String? question;
+  late String askerUsername;
   late bool guess;
-  late String? guessPlayerID;
+  late String? guessPlayerUsername;
   late List<Response> responses;
 
   Question({
     required this.questionID,
-    required this.question,
+    this.question,
+    required this.askerUsername,
     required this.guess,
-    this.guessPlayerID,
+    this.guessPlayerUsername,
     List<Response>? responses,
   }) {
     this.responses = responses == null ? [] : [...responses];
@@ -53,19 +57,22 @@ class Question {
     return {
       DocKeyQuestion.questionID.name: questionID,
       DocKeyQuestion.question.name: question,
+      DocKeyQuestion.askerUsername.name: askerUsername,
       DocKeyQuestion.guess.name: guess,
-      DocKeyQuestion.guessPlayerID.name: guessPlayerID,
+      DocKeyQuestion.guessPlayerUsername.name: guessPlayerUsername,
+      DocKeyQuestion.responses.name: responseDocuments,
     };
   }
 
   static Question? fromFirestoreDoc({
     required Map<String, dynamic> doc,
   }) {
-    Question q =  Question(
+    Question q = Question(
       questionID: doc[DocKeyQuestion.questionID.name] ?? 'N/A',
       question: doc[DocKeyQuestion.question.name] ?? 'N/A',
+      askerUsername: doc[DocKeyQuestion.askerUsername.name] ?? 'N/A',
       guess: doc[DocKeyQuestion.guess.name] ?? false,
-      guessPlayerID: doc[DocKeyQuestion.guessPlayerID.name] ?? 'N/A',
+      guessPlayerUsername: doc[DocKeyQuestion.guessPlayerUsername.name] ?? 'N/A',
     );
     List<dynamic> responseDocuments = doc[DocKeyQuestion.responses.name];
     q.responses = q.getResponses(responseDocuments);

@@ -122,8 +122,21 @@ class _LobbyScreenState extends State<LobbyScreen> {
 }
 
 AlertDialog _atLeastTwoPlayersAlert(BuildContext context) {
-  return const AlertDialog(
-      title: Text('There must be at least two players to start.'));
+  return AlertDialog(
+    title: RichText(
+      text: const TextSpan(
+        text: 'There must be at least ',
+        style: TextStyle(fontSize: 24),
+        children: [
+          TextSpan(
+            text: 'two',
+            style: TextStyle(color: Colors.amber),
+          ),
+          TextSpan(text: ' players to start.'),
+        ],
+      ),
+    ),
+  );
 }
 
 class _Controller {
@@ -143,6 +156,7 @@ class _Controller {
       var l = Lobby.fromFirestoreDoc(doc: document, docID: event.id);
       if (l != null) state.widget.lobby.assign(l);
       if (state.widget.lobby.open == false) {
+        listener.cancel();
         await Navigator.pushNamed(
           state.context,
           GameScreen.routeName,
@@ -150,8 +164,9 @@ class _Controller {
             ARGS.PROFILE: state.widget.profile,
             ARGS.LOBBY: state.widget.lobby,
           },
-        );
-        listener.cancel();
+        ).then((value) {
+          Navigator.pop(state.context);
+        });
       }
       state.render(() {});
     });
@@ -165,14 +180,22 @@ class _Controller {
           return _atLeastTwoPlayersAlert(context);
         },
       );
+      return;
     }
     final lobbyReference = FirebaseFirestore.instance
         .collection(Constants.lobbyCollection)
         .doc(state.widget.lobby.docID);
-    FirebaseFirestore.instance.runTransaction((transaction) async {
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
       final snapshot = await transaction.get(lobbyReference);
       List<dynamic> playerDocuments = snapshot.get(Lobby.PLAYERS);
       playerDocuments.shuffle();
+      for (int i = 0; i < playerDocuments.length; i++) {
+        Player? p = Player.fromFirestoreDoc(doc: playerDocuments[i]);
+        if (p != null) {
+          p.turnOrder = i + 1;
+          playerDocuments[i] = p.toFirestoreDoc();
+        }
+      }
       transaction.update(lobbyReference, {
         Lobby.OPEN: false,
         Lobby.PLAYERS: playerDocuments,
@@ -185,7 +208,7 @@ class _Controller {
     final lobbyReference = FirebaseFirestore.instance
         .collection(Constants.lobbyCollection)
         .doc(state.widget.lobby.docID);
-    FirebaseFirestore.instance.runTransaction((transaction) async {
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
       final snapshot = await transaction.get(lobbyReference);
       List<dynamic> playerIDs = snapshot.get(Lobby.PLAYER_IDS);
       for (int i = 0; i < playerIDs.length; i++) {

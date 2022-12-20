@@ -1,23 +1,23 @@
 enum DocKeyResponse {
-  responsePlayerID,
+  responsePlayerUsername,
   response,
 }
 
 class Response {
-  static const RESPONSE_PLAYER_ID = 'responsePlayerID';
+  static const RESPONSE_PLAYER_USERNAME = 'responsePlayerUsername';
   static const RESPONSE = 'response';
 
-  late String responsePlayerID;
+  late String responsePlayerUsername;
   late String response;
 
   Response({
-    required this.responsePlayerID,
+    required this.responsePlayerUsername,
     required this.response,
   });
 
   Map<String, dynamic> toFirestoreDoc() {
     return {
-      DocKeyResponse.responsePlayerID.name: responsePlayerID,
+      DocKeyResponse.responsePlayerUsername.name: responsePlayerUsername,
       DocKeyResponse.response.name: response,
     };
   }
@@ -26,7 +26,7 @@ class Response {
     required Map<String, dynamic> doc,
   }) {
     return Response(
-      responsePlayerID: doc[DocKeyResponse.responsePlayerID.name] ?? 'N/A',
+      responsePlayerUsername: doc[DocKeyResponse.responsePlayerUsername.name] ?? 'N/A',
       response: doc[DocKeyResponse.response.name] ?? 'N/A',
     );
   }
