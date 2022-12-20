@@ -978,6 +978,10 @@ class _Controller {
             p.correctGuesses.add(state.widget.profile.username);
             playerDocuments[i] = p.toFirestoreDoc();
           }
+          if (p != null && playerDocuments.length > 2 && p.username == question.guessPlayerUsername) {
+            p.score += 20 - questionsAsked(p.username) + 1;
+            playerDocuments[i] = p.toFirestoreDoc();
+          }
         }
         transaction.update(lobbyReference, {
           Lobby.PLAYERS: playerDocuments,
