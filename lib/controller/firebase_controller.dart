@@ -107,4 +107,16 @@ class FirestoreController {
     }
     return false;
   }
+
+  static Future<bool> checkIfGuest({required String playerID}) async {
+    DocumentSnapshot<Map<String, dynamic>> querySnapshot = await FirebaseFirestore.instance
+        .collection(Constants.profileCollection)
+        .doc(playerID)
+        .get();
+
+    if (querySnapshot.exists) {
+      return false;
+    }
+    return true;
+  }
 }

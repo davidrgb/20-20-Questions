@@ -48,6 +48,7 @@ class QuestionsApp extends StatelessWidget {
             Object? args = ModalRoute.of(context)?.settings.arguments;
             if (args == null) {
               print("ARGS IS NULL FOR LOBBY LIST SCREEN");
+              return const HomeScreen();
             }
             var arguments = args as Map;
             var player = arguments[ARGS.PROFILE];
@@ -59,6 +60,7 @@ class QuestionsApp extends StatelessWidget {
             Object? args = ModalRoute.of(context)?.settings.arguments;
             if (args == null) {
               print("ARGS IS NULL FOR LOBBY SCREEN");
+              return const HomeScreen();
             }
             var arguments = args as Map;
             var profile = arguments[ARGS.PROFILE];
@@ -72,6 +74,7 @@ class QuestionsApp extends StatelessWidget {
             Object? args = ModalRoute.of(context)?.settings.arguments;
             if (args == null) {
               print("ARGS IS NULL FOR LOBBY SCREEN");
+              return const HomeScreen();
             }
             var arguments = args as Map;
             var profile = arguments[ARGS.PROFILE];

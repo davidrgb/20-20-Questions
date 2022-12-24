@@ -77,6 +77,7 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                             text: 'Join \nor create \na lobby,\n',
                             style: const TextStyle(
                               fontSize: 36,
+                              color: Colors.white,
                             ),
                             children: [
                               TextSpan(
@@ -291,7 +292,7 @@ class _Controller {
       String url = await CloudStorageController.getPhotoURL(
           playerID: state.widget.profile.playerID);
       networkPhoto = Image.network(url);
-      state.render((){});
+      state.render(() {});
     }
   }
 
