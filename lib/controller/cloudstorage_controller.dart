@@ -1,31 +1,20 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class CloudStorageController {
-  static Future<Map<ARGS, String>> uploadProfilePicture(
-      {required File photo,
+  static Future<void> uploadProfilePicture(
+      {required Uint8List photo,
       String? filename,
       required String playerID,
-      Function? listener}) async {
+      }) async {
     filename ??= '${Constants.profilePicturesFolder}/$playerID';
-    UploadTask task = FirebaseStorage.instance.ref(filename).putFile(photo);
-    task.snapshotEvents.listen((TaskSnapshot event) {
-      int progress = (event.bytesTransferred / event.totalBytes * 100).toInt();
-      if (listener != null) {
-        listener(progress);
-      }
-    });
+    UploadTask task = FirebaseStorage.instance.ref(filename).putData(photo);
     await task;
-    String downloadURL =
-        await FirebaseStorage.instance.ref(filename).getDownloadURL();
-    return {
-      ARGS.DownloadURL: downloadURL,
-      ARGS.Filename: filename,
-    };
   }
 
   static Future<bool> profilePictureExists({required String playerID}) async {

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -89,25 +90,21 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                         ),
                       ),
                       controller.networkPhoto == null
-                          ? controller.photo == null
-                              ? IconButton(
-                                  padding: const EdgeInsets.all(0),
-                                  icon: const Icon(
-                                    Icons.camera_alt,
-                                    size: 50,
-                                  ),
-                                  onPressed: controller.getPhoto,
-                                )
-                              : CircleAvatar(
-                                  radius: 35,
-                                  backgroundImage: Image.file(
-                                    controller.photo!,
-                                    fit: BoxFit.cover,
-                                  ).image)
-                          : CircleAvatar(
-                              radius: 35,
-                              backgroundImage: controller.networkPhoto!.image,
-                            ),
+                          ? IconButton(
+                              padding: const EdgeInsets.all(0),
+                              icon: const Icon(
+                                Icons.camera_alt,
+                                size: 50,
+                              ),
+                              onPressed: controller.getPhoto,
+                            )
+                          : GestureDetector(
+                            onTap: controller.getPhoto,
+                            child: CircleAvatar(
+                                radius: 35,
+                                backgroundImage: controller.networkPhoto!.image,
+                              ),
+                          ),
                     ],
                   ),
                 ),
@@ -284,7 +281,7 @@ class _Controller {
     });
   }
 
-  void loadPhoto() async {
+  Future<void> loadPhoto() async {
     bool profilePictureExists =
         await CloudStorageController.profilePictureExists(
             playerID: state.widget.profile.playerID);
@@ -296,13 +293,14 @@ class _Controller {
     }
   }
 
-  void getPhoto() async {
+  Future<void> getPhoto() async {
     XFile? selectedPhoto =
         await ImagePicker().pickImage(source: ImageSource.gallery);
     if (selectedPhoto == null) return;
-    photo = File(selectedPhoto.path);
-    await CloudStorageController.uploadProfilePicture(
-        photo: photo!, playerID: state.widget.profile.playerID);
+    String path = selectedPhoto.path;
+    Uint8List imageData = await XFile(path).readAsBytes();
+    await CloudStorageController.uploadProfilePicture(photo: imageData, playerID: state.widget.profile.playerID);
+    await loadPhoto();
   }
 
   String? validateLobbyName(String? value) {
