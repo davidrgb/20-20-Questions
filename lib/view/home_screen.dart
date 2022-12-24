@@ -71,6 +71,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
+              const Align(
+                alignment: Alignment.bottomCenter,
+                child: Text('Build 1.0.3'),
+              ),
             ],
           ),
         ),

@@ -72,7 +72,7 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       SizedBox(
-                        width: 200,
+                        width: 175,
                         child: RichText(
                           text: TextSpan(
                             text: 'Join \nor create \na lobby,\n',
@@ -101,7 +101,7 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                           : GestureDetector(
                             onTap: controller.getPhoto,
                             child: CircleAvatar(
-                                radius: 35,
+                                radius: 50,
                                 backgroundImage: controller.networkPhoto!.image,
                               ),
                           ),

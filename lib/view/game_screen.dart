@@ -545,7 +545,7 @@ class _GameScreenState extends State<GameScreen> {
                         ? Padding(
                             padding: const EdgeInsets.only(right: 10),
                             child: CircleAvatar(
-                              radius: 20,
+                              radius: 35,
                               backgroundImage: widget
                                   .photos[widget.lobby.players[i].playerID]!
                                   .image,
@@ -554,7 +554,7 @@ class _GameScreenState extends State<GameScreen> {
                         : Padding(
                             padding: const EdgeInsets.only(right: 10),
                             child: CircleAvatar(
-                              radius: 20,
+                              radius: 35,
                               backgroundImage: Image.asset('assets/spy.jpg').image,
                             ),
                           ),
@@ -597,7 +597,7 @@ class _GameScreenState extends State<GameScreen> {
                 ? Column(
                     children: [
                       CircleAvatar(
-                        radius: 35,
+                        radius: 75,
                         backgroundImage: widget
                             .photos[widget.lobby.players[index].playerID]!
                             .image,

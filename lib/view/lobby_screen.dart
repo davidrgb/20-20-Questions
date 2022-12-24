@@ -91,7 +91,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 CircleAvatar(
-                                  radius: 25,
+                                  radius: 35,
                                   backgroundImage: controller
                                       .photos[widget.lobby.players[i].playerID]!
                                       .image,
@@ -109,7 +109,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 CircleAvatar(
-                                  radius: 25,
+                                  radius: 35,
                                   backgroundImage: Image.asset('assets/spy.jpg').image,
                                 ),
                                 Padding(
