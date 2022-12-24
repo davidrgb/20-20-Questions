@@ -292,6 +292,33 @@ class _GameScreenState extends State<GameScreen> {
   Column showSubmitResponse() {
     return Column(
       children: [
+        controller.isGuess()
+            ? Column(
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontSize: 24,
+                        color: Colors.white,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: widget
+                              .lobby
+                              .questions[widget.lobby.questions.length - 1]
+                              .askerUsername,
+                          style: const TextStyle(color: Colors.amber),
+                        ),
+                        const TextSpan(text: ' is guessing'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              )
+            : const SizedBox(
+                height: 0,
+              ),
         RichText(
           text: TextSpan(
             style: const TextStyle(
@@ -324,49 +351,62 @@ class _GameScreenState extends State<GameScreen> {
                 text: 'Answer',
                 style: TextStyle(color: Colors.amber),
               ),
-              TextSpan(
-                  text:
-                      ' - ${controller.getPlayerAnswer()}'),
+              TextSpan(text: ' - ${controller.getPlayerAnswer()}'),
             ],
           ),
         ),
         const SizedBox(
-          height: 20,
+          width: 300,
+          child: Divider(
+            color: Colors.amber,
+            thickness: 1,
+          ),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () => controller.submitResponse('no'),
-              icon: const Icon(
-                Icons.cancel,
-                color: Colors.red,
-                size: 40,
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: () => controller.submitResponse('no'),
+                    padding: const EdgeInsets.all(0),
+                    icon: const Icon(
+                      Icons.cancel,
+                      color: Colors.red,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  IconButton(
+                    onPressed: () => controller.submitResponse('unsure'),
+                    padding: const EdgeInsets.all(0),
+                    icon: const Icon(
+                      Icons.question_mark_outlined,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  IconButton(
+                    onPressed: () => controller.submitResponse('yes'),
+                    padding: const EdgeInsets.all(0),
+                    icon: const Icon(
+                      Icons.check,
+                      color: Colors.green,
+                      size: 40,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(
-              width: 10,
-            ),
-            IconButton(
-              onPressed: () => controller.submitResponse('unsure'),
-              icon: const Icon(
-                Icons.question_mark_rounded,
-                color: Colors.white,
-                size: 40,
-              ),
-            ),
-            const SizedBox(
-              width: 10,
-            ),
-            IconButton(
-              onPressed: () => controller.submitResponse('yes'),
-              icon: const Icon(
-                Icons.check,
-                color: Colors.green,
-                size: 40,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(
           height: 20,
@@ -424,7 +464,7 @@ class _GameScreenState extends State<GameScreen> {
   Column showPlayerButtonColumn() {
     return Column(
       children: [
-        widget.lobby.questions.isEmpty
+        widget.lobby.questions.isEmpty || controller.isGameOver()
             ? RichText(
                 text: const TextSpan(
                   style: TextStyle(
@@ -465,7 +505,9 @@ class _GameScreenState extends State<GameScreen> {
                                         widget.lobby.questions.length - 1]
                                     .guessPlayerUsername !=
                                 widget.profile.username
-                        ? const TextSpan(text: ' - ???')
+                        ? TextSpan(
+                            text:
+                                ' - ${widget.lobby.questions[widget.lobby.questions.length - 1].askerUsername} guessed ${widget.lobby.questions[widget.lobby.questions.length - 1].guessPlayerUsername}')
                         : TextSpan(
                             text:
                                 ' - ${widget.lobby.questions[widget.lobby.questions.length - 1].question}'),
@@ -537,6 +579,31 @@ class _GameScreenState extends State<GameScreen> {
                     ]
                   : controller.getPlayerDetails(index),
             ),
+            controller.isGameOver()
+                ? Column(
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                            text: 'The answer was ',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              color: Colors.white,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: widget.lobby.players[index].answer,
+                                style: const TextStyle(color: Colors.amber),
+                              ),
+                            ]),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                    ],
+                  )
+                : const SizedBox(
+                    height: 0,
+                  ),
             Center(
               child: Text(
                 'Score - ${widget.lobby.players[index].score}',
@@ -570,39 +637,9 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ),
         const SizedBox(
-          width: 300,
-          child: Divider(
-            color: Colors.amber,
-            thickness: 2,
-          ),
-        ),
-        const SizedBox(
           height: 20,
         ),
-        for (int i = 0; i < widget.lobby.players.length; i++)
-          Column(
-            children: [
-              RichText(
-                text: TextSpan(
-                    text: widget.lobby.players[i].username,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      color: Colors.amber,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: ' - ${widget.lobby.players[i].score}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ]),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-            ],
-          ),
+        showPlayerButtonColumn(),
       ],
     );
   }
@@ -899,6 +936,7 @@ class _Controller {
         Lobby.QUESTIONS: questionDocuments,
       });
     });
+    guessPlayerUsername = null;
   }
 
   bool hasResponded() {
@@ -978,7 +1016,9 @@ class _Controller {
             p.correctGuesses.add(state.widget.profile.username);
             playerDocuments[i] = p.toFirestoreDoc();
           }
-          if (p != null && playerDocuments.length > 2 && p.username == question.guessPlayerUsername) {
+          if (p != null &&
+              playerDocuments.length > 2 &&
+              p.username == question.guessPlayerUsername) {
             p.score += 20 - questionsAsked(p.username) + 1;
             playerDocuments[i] = p.toFirestoreDoc();
           }
@@ -1085,7 +1125,9 @@ class _Controller {
                             ? Colors.red
                             : Colors.white,
                   ),
-                  child: Text(question.question!),
+                  child: Text(question.guess && !isGameOver()
+                      ? "${question.askerUsername}'s guess"
+                      : question.question!),
                 ),
                 const SizedBox(
                   height: 20,
@@ -1101,11 +1143,17 @@ class _Controller {
 
   String getPlayerAnswer() {
     for (int i = 0; i < state.widget.lobby.players.length; i++) {
-      if (state.widget.lobby.players[i].username == state.widget.profile.username) {
+      if (state.widget.lobby.players[i].username ==
+          state.widget.profile.username) {
         return state.widget.lobby.players[i].answer;
       }
     }
     return '';
+  }
+
+  bool isGameOver() {
+    return allAnswersSubmitted() &&
+        (usedAllQuestions() || allPlayersGuessedAllCorrectly());
   }
 
   Future<bool> leave() async {

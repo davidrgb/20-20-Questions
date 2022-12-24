@@ -127,7 +127,10 @@ AlertDialog _atLeastTwoPlayersAlert(BuildContext context) {
     title: RichText(
       text: const TextSpan(
         text: 'There must be at least ',
-        style: TextStyle(fontSize: 24),
+        style: TextStyle(
+          fontSize: 24,
+          color: Colors.white,
+        ),
         children: [
           TextSpan(
             text: 'two',
