@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:twenty_twenty_questions/controller/cloudstorage_controller.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/lobby.dart';
 import 'package:twenty_twenty_questions/model/player.dart';
@@ -84,13 +85,42 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 for (int i = 0; i < widget.lobby.players.length; i++)
                   Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Text(
-                          widget.lobby.players[i].username,
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                      ),
+                      controller.photos
+                              .containsKey(widget.lobby.players[i].playerID)
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 25,
+                                  backgroundImage: controller
+                                      .photos[widget.lobby.players[i].playerID]!
+                                      .image,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Text(
+                                    widget.lobby.players[i].username,
+                                    style: const TextStyle(fontSize: 18),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 25,
+                                  backgroundImage: Image.asset('assets/spy.jpg').image,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Text(
+                                    widget.lobby.players[i].username,
+                                    style: const TextStyle(fontSize: 18),
+                                  ),
+                                ),
+                              ],
+                            ),
                       const SizedBox(
                         width: 200,
                         child: Divider(
@@ -146,6 +176,7 @@ AlertDialog _atLeastTwoPlayersAlert(BuildContext context) {
 class _Controller {
   late _LobbyScreenState state;
   late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> listener;
+  Map<String, Image> photos = {};
 
   _Controller(this.state) {
     createListener();
@@ -159,6 +190,7 @@ class _Controller {
       var document = event.data() as Map<String, dynamic>;
       var l = Lobby.fromFirestoreDoc(doc: document, docID: event.id);
       if (l != null) state.widget.lobby.assign(l);
+      await getProfilePictures();
       if (state.widget.lobby.open == false) {
         listener.cancel();
         await Navigator.pushNamed(
@@ -167,6 +199,7 @@ class _Controller {
           arguments: {
             ARGS.PROFILE: state.widget.profile,
             ARGS.LOBBY: state.widget.lobby,
+            ARGS.PHOTOS: photos,
           },
         ).then((value) {
           Navigator.pop(state.context);
@@ -174,6 +207,19 @@ class _Controller {
       }
       state.render(() {});
     });
+  }
+
+  Future<void> getProfilePictures() async {
+    for (int i = 0; i < state.widget.lobby.players.length; i++) {
+      bool profilePictureExists =
+          await CloudStorageController.profilePictureExists(
+              playerID: state.widget.lobby.players[i].playerID);
+      if (profilePictureExists) {
+        String url = await CloudStorageController.getPhotoURL(
+            playerID: state.widget.lobby.players[i].playerID);
+        photos[state.widget.lobby.players[i].playerID] = Image.network(url);
+      }
+    }
   }
 
   void start() async {

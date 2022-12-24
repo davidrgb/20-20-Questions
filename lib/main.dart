@@ -76,9 +76,11 @@ class QuestionsApp extends StatelessWidget {
             var arguments = args as Map;
             var profile = arguments[ARGS.PROFILE];
             var lobby = arguments[ARGS.LOBBY];
+            var photos = arguments[ARGS.PHOTOS];
             return GameScreen(
               profile: profile,
               lobby: lobby,
+              photos: photos,
             );
           },
         });

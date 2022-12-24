@@ -1,4 +1,5 @@
 enum DocKeyPlayer {
+  playerID,
   username,
   score,
   turnOrder,
@@ -7,12 +8,14 @@ enum DocKeyPlayer {
 }
 
 class Player {
+  static const PLAYER_ID = 'playerID';
   static const USERNAME = 'username';
   static const SCORE = 'score';
   static const TURN_ORDER = 'turnOrder';
   static const ANSWER = 'answer';
   static const CORRECT_GUESSES = 'correctGuesses';
 
+  late String playerID;
   late String username;
   late int score;
   late int turnOrder;
@@ -20,6 +23,7 @@ class Player {
   late List<String> correctGuesses;
 
   Player({
+    required this.playerID,
     required this.username,
     this.score = 0,
     this.turnOrder = -1,
@@ -31,6 +35,7 @@ class Player {
 
   Map<String, dynamic> toFirestoreDoc() {
     return {
+      DocKeyPlayer.playerID.name: playerID,
       DocKeyPlayer.username.name: username,
       DocKeyPlayer.score.name: score,
       DocKeyPlayer.turnOrder.name: turnOrder,
@@ -43,6 +48,7 @@ class Player {
     required Map<String, dynamic> doc,
   }) {
     Player p = Player(
+      playerID: doc[DocKeyPlayer.playerID.name] ?? 'N/A',
       username: doc[DocKeyPlayer.username.name] ?? 'N/A',
       score: doc[DocKeyPlayer.score.name] ?? 0,
       turnOrder: doc[DocKeyPlayer.turnOrder.name] ?? -1,

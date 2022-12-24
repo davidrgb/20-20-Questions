@@ -14,11 +14,13 @@ class GameScreen extends StatefulWidget {
   static const routeName = '/gameScreen';
   final Profile profile;
   final Lobby lobby;
+  final Map<String, Image> photos;
 
   const GameScreen({
     Key? key,
     required this.profile,
     required this.lobby,
+    required this.photos,
   }) : super(key: key);
 
   @override
@@ -376,7 +378,7 @@ class _GameScreenState extends State<GameScreen> {
                     icon: const Icon(
                       Icons.cancel,
                       color: Colors.red,
-                      size: 40,
+                      size: 60,
                     ),
                   ),
                   const SizedBox(
@@ -388,7 +390,7 @@ class _GameScreenState extends State<GameScreen> {
                     icon: const Icon(
                       Icons.question_mark_outlined,
                       color: Colors.white,
-                      size: 40,
+                      size: 60,
                     ),
                   ),
                   const SizedBox(
@@ -400,7 +402,7 @@ class _GameScreenState extends State<GameScreen> {
                     icon: const Icon(
                       Icons.check,
                       color: Colors.green,
-                      size: 40,
+                      size: 60,
                     ),
                   ),
                 ],
@@ -536,8 +538,30 @@ class _GameScreenState extends State<GameScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                     backgroundColor: controller.getPlayerButtonColor(i)),
-                child: Text(
-                  widget.lobby.players[i].username,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    widget.photos.containsKey(widget.lobby.players[i].playerID)
+                        ? Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundImage: widget
+                                  .photos[widget.lobby.players[i].playerID]!
+                                  .image,
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundImage: Image.asset('assets/spy.jpg').image,
+                            ),
+                          ),
+                    Text(
+                      widget.lobby.players[i].username,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(
@@ -569,6 +593,23 @@ class _GameScreenState extends State<GameScreen> {
       content: SingleChildScrollView(
         child: Column(
           children: [
+            widget.photos.containsKey(widget.lobby.players[index].playerID)
+                ? Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 35,
+                        backgroundImage: widget
+                            .photos[widget.lobby.players[index].playerID]!
+                            .image,
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                    ],
+                  )
+                : const SizedBox(
+                    height: 0,
+                  ),
             Column(
               children: controller.getPlayerDetails(index).isEmpty
                   ? [

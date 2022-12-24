@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:twenty_twenty_questions/controller/cloudstorage_controller.dart';
 import 'package:twenty_twenty_questions/controller/firebase_controller.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/lobby.dart';
@@ -62,21 +65,49 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
             child: Column(
               children: [
                 SizedBox(
-                  width: 250,
-                  child: RichText(
-                    text: TextSpan(
-                      text: 'Join \nor create \na lobby,\n',
-                      style: const TextStyle(
-                        fontSize: 36,
-                        color: Colors.white,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: widget.profile.username,
-                          style: const TextStyle(color: Colors.amber),
+                  width: 275,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      SizedBox(
+                        width: 200,
+                        child: RichText(
+                          text: TextSpan(
+                            text: 'Join \nor create \na lobby,\n',
+                            style: const TextStyle(
+                              fontSize: 36,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: widget.profile.username,
+                                style: const TextStyle(color: Colors.amber),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                      controller.networkPhoto == null
+                          ? controller.photo == null
+                              ? IconButton(
+                                  padding: const EdgeInsets.all(0),
+                                  icon: const Icon(
+                                    Icons.camera_alt,
+                                    size: 50,
+                                  ),
+                                  onPressed: controller.getPhoto,
+                                )
+                              : CircleAvatar(
+                                  radius: 35,
+                                  backgroundImage: Image.file(
+                                    controller.photo!,
+                                    fit: BoxFit.cover,
+                                  ).image)
+                          : CircleAvatar(
+                              radius: 35,
+                              backgroundImage: controller.networkPhoto!.image,
+                            ),
+                    ],
                   ),
                 ),
                 const SizedBox(
@@ -230,8 +261,11 @@ class _Controller {
   bool isLoading = false;
   String? lobbyName;
   late StreamSubscription<QuerySnapshot<Map<String, dynamic>>> listener;
+  File? photo;
+  Image? networkPhoto;
 
   _Controller(this.state) {
+    loadPhoto();
     createListener();
   }
 
@@ -247,6 +281,27 @@ class _Controller {
       }
       state.render(() {});
     });
+  }
+
+  void loadPhoto() async {
+    bool profilePictureExists =
+        await CloudStorageController.profilePictureExists(
+            playerID: state.widget.profile.playerID);
+    if (profilePictureExists) {
+      String url = await CloudStorageController.getPhotoURL(
+          playerID: state.widget.profile.playerID);
+      networkPhoto = Image.network(url);
+      state.render((){});
+    }
+  }
+
+  void getPhoto() async {
+    XFile? selectedPhoto =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (selectedPhoto == null) return;
+    photo = File(selectedPhoto.path);
+    await CloudStorageController.uploadProfilePicture(
+        photo: photo!, playerID: state.widget.profile.playerID);
   }
 
   String? validateLobbyName(String? value) {
@@ -269,7 +324,10 @@ class _Controller {
     }
     currentState.save();
 
-    Player player = Player(username: state.widget.profile.username);
+    Player player = Player(
+      playerID: state.widget.profile.playerID,
+      username: state.widget.profile.username,
+    );
 
     Lobby lobby = Lobby(
       docID: auth.currentUser!.uid,
@@ -321,7 +379,10 @@ class _Controller {
           return;
         }
       }
-      Player player = Player(username: state.widget.profile.username);
+      Player player = Player(
+        playerID: state.widget.profile.playerID,
+        username: state.widget.profile.username,
+      );
       playerDocuments.add(player.toFirestoreDoc());
       transaction.update(lobbyReference, {
         Lobby.PLAYER_IDS: playerIDs,
