@@ -405,6 +405,7 @@ class _Controller {
   }
 
   void logOut() async {
+    listener.cancel();
     auth.signOut();
     await Navigator.pushNamed(
       state.context,
