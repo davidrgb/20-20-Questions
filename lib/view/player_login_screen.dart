@@ -124,6 +124,12 @@ class _Controller {
       return 'Username required';
     } else if (value.length > 20) {
       return 'Username must be 20 characters or less.';
+    } else if (value.contains(' ')) {
+      return 'Username cannot contain any space characters.';
+    } else if (value.contains('.')) {
+      return 'Username cannot contain any \'.\' characters.';
+    } else if (value.contains('@')) {
+      return 'Username cannot contain any @ characters.';
     } else {
       return null;
     }
