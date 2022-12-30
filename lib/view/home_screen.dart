@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/view/guest_login_screen.dart';
 import 'package:twenty_twenty_questions/view/player_login_screen.dart';
 
@@ -73,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const Align(
                 alignment: Alignment.bottomCenter,
-                child: Text('Build 1.0.3'),
+                child: Text('Build ${Constants.version}'),
               ),
             ],
           ),
