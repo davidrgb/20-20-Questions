@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:twenty_twenty_questions/model/answer.dart';
+import 'package:twenty_twenty_questions/controller/firebase_controller.dart';
 import 'package:twenty_twenty_questions/model/constant.dart';
 import 'package:twenty_twenty_questions/model/lobby.dart';
 import 'package:twenty_twenty_questions/model/player.dart';
@@ -353,7 +353,7 @@ class _GameScreenState extends State<GameScreen> {
                 text: 'Answer',
                 style: TextStyle(color: Colors.amber),
               ),
-              TextSpan(text: ' - ${controller.getPlayerAnswer()}'),
+              TextSpan(text: ' - ${controller.getPlayerAnswer(null)}'),
             ],
           ),
         ),
@@ -389,7 +389,6 @@ class _GameScreenState extends State<GameScreen> {
                     padding: const EdgeInsets.all(0),
                     icon: const Icon(
                       Icons.question_mark_outlined,
-                      color: Colors.white,
                       size: 60,
                     ),
                   ),
@@ -555,7 +554,8 @@ class _GameScreenState extends State<GameScreen> {
                             padding: const EdgeInsets.only(right: 10),
                             child: CircleAvatar(
                               radius: 35,
-                              backgroundImage: Image.asset('assets/spy.jpg').image,
+                              backgroundImage:
+                                  Image.asset('assets/spy.jpg').image,
                             ),
                           ),
                     Text(
@@ -730,7 +730,7 @@ class _Controller {
   String? question;
   String? guessPlayerUsername;
 
-  _Controller(this.state) {}
+  _Controller(this.state);
 
   void createListener() {
     final reference = FirebaseFirestore.instance
@@ -1182,11 +1182,17 @@ class _Controller {
     return buttons;
   }
 
-  String getPlayerAnswer() {
+  String getPlayerAnswer(String? username) {
     for (int i = 0; i < state.widget.lobby.players.length; i++) {
-      if (state.widget.lobby.players[i].username ==
-          state.widget.profile.username) {
-        return state.widget.lobby.players[i].answer;
+      if (username != null) {
+        if (state.widget.lobby.players[i].username == username) {
+          return state.widget.lobby.players[i].answer;
+        }
+      } else {
+        if (state.widget.lobby.players[i].username ==
+            state.widget.profile.username) {
+          return state.widget.lobby.players[i].answer;
+        }
       }
     }
     return '';
@@ -1201,28 +1207,75 @@ class _Controller {
     if (!allPlayersGuessedAllCorrectly()) {
       listener.cancel();
     }
-    final lobbyReference = FirebaseFirestore.instance
-        .collection(Constants.lobbyCollection)
-        .doc(state.widget.lobby.docID);
-    FirebaseFirestore.instance.runTransaction((transaction) async {
-      final snapshot = await transaction.get(lobbyReference);
-      List<dynamic> playerDocuments = snapshot.get(Lobby.PLAYERS);
-      for (int i = playerDocuments.length - 1; i >= 0; i--) {
-        Player? player = Player.fromFirestoreDoc(doc: playerDocuments[i]);
-        if (player != null &&
-            player.username == state.widget.profile.username) {
-          playerDocuments.removeAt(i);
+    if (!isGameOver()) {
+      final lobbyReference = FirebaseFirestore.instance
+          .collection(Constants.lobbyCollection)
+          .doc(state.widget.lobby.docID);
+      FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(lobbyReference);
+        List<dynamic> playerDocuments = snapshot.get(Lobby.PLAYERS);
+        for (int i = playerDocuments.length - 1; i >= 0; i--) {
+          Player? player = Player.fromFirestoreDoc(doc: playerDocuments[i]);
+          if (player != null &&
+              player.username == state.widget.profile.username) {
+            playerDocuments.removeAt(i);
+          }
         }
-      }
-      for (int i = 0; i < playerDocuments.length; i++) {
-        Player? player = Player.fromFirestoreDoc(doc: playerDocuments[i]);
-        if (player != null) {
-          player.turnOrder = i + 1;
-          playerDocuments[i] = player.toFirestoreDoc();
+        for (int i = 0; i < playerDocuments.length; i++) {
+          Player? player = Player.fromFirestoreDoc(doc: playerDocuments[i]);
+          if (player != null) {
+            player.turnOrder = i + 1;
+            playerDocuments[i] = player.toFirestoreDoc();
+          }
         }
-      }
-      transaction.update(lobbyReference, {Lobby.PLAYERS: playerDocuments});
-    });
+        transaction.update(lobbyReference, {Lobby.PLAYERS: playerDocuments});
+      });
+    }
+    bool isGuest = await FirestoreController.checkIfGuest(
+        playerID: state.widget.profile.playerID);
+    if (!isGuest) {
+      final profileReference = FirebaseFirestore.instance
+          .collection(Constants.profileCollection)
+          .doc(state.widget.profile.playerID);
+      FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(profileReference);
+        Player? player;
+        bool winner = false;
+        int highestScore = state.widget.lobby.players[0].score;
+        List<String> answersGuessed = [];
+        for (int i = 0; i < state.widget.lobby.players.length; i++) {
+          if (state.widget.lobby.players[i].playerID ==
+              state.widget.profile.playerID) {
+            player = state.widget.lobby.players[i];
+            if (player.score == highestScore) {
+              winner = true;
+            }
+            for (int j = 0; j < player.correctGuesses.length; j++) {
+              answersGuessed.add(getPlayerAnswer(player.correctGuesses[j]));
+            }
+          }
+        }
+        int lifetimeScore = snapshot.get(Profile.LIFETIME_SCORE);
+        lifetimeScore += player!.score;
+        List<dynamic> answersGuessedDocuments =
+            snapshot.get(Profile.ANSWERS_GUESSED);
+        for (int i = 0; i < answersGuessed.length; i++) {
+          answersGuessedDocuments.add(answersGuessed[i]);
+        }
+        int wins = snapshot.get(Profile.WINS);
+        if (winner) {
+          wins++;
+        }
+        int gamesPlayed = snapshot.get(Profile.GAMES_PLAYED);
+        gamesPlayed++;
+        transaction.update(profileReference, {
+          Profile.LIFETIME_SCORE: lifetimeScore,
+          Profile.ANSWERS_GUESSED: answersGuessedDocuments,
+          Profile.WINS: wins,
+          Profile.GAMES_PLAYED: gamesPlayed,
+        });
+      });
+    }
     return true;
   }
 }
