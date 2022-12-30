@@ -13,6 +13,7 @@ import 'package:twenty_twenty_questions/model/player.dart';
 import 'package:twenty_twenty_questions/model/profile.dart';
 import 'package:twenty_twenty_questions/view/home_screen.dart';
 import 'package:twenty_twenty_questions/view/lobby_screen.dart';
+import 'package:twenty_twenty_questions/view/profile_screen.dart';
 
 class LobbyListScreen extends StatefulWidget {
   static const routeName = '/lobbyListScreen';
@@ -90,21 +91,25 @@ class _LobbyListScreenState extends State<LobbyListScreen> {
                         ),
                       ),
                       controller.networkPhoto == null
-                          ? IconButton(
-                              padding: const EdgeInsets.all(0),
-                              icon: const Icon(
-                                Icons.camera_alt,
-                                size: 50,
+                          ? GestureDetector(
+                              onLongPress: controller.openProfile,
+                              child: IconButton(
+                                padding: const EdgeInsets.all(0),
+                                icon: const Icon(
+                                  Icons.camera_alt,
+                                  size: 50,
+                                ),
+                                onPressed: controller.getPhoto,
                               ),
-                              onPressed: controller.getPhoto,
                             )
                           : GestureDetector(
-                            onTap: controller.getPhoto,
-                            child: CircleAvatar(
+                              onTap: controller.getPhoto,
+                              onLongPress: controller.openProfile,
+                              child: CircleAvatar(
                                 radius: 50,
                                 backgroundImage: controller.networkPhoto!.image,
                               ),
-                          ),
+                            ),
                     ],
                   ),
                 ),
@@ -299,8 +304,27 @@ class _Controller {
     if (selectedPhoto == null) return;
     String path = selectedPhoto.path;
     Uint8List imageData = await XFile(path).readAsBytes();
-    await CloudStorageController.uploadProfilePicture(photo: imageData, playerID: state.widget.profile.playerID);
+    await CloudStorageController.uploadProfilePicture(
+        photo: imageData, playerID: state.widget.profile.playerID);
     await loadPhoto();
+  }
+
+  void openProfile() async {
+    if (await FirestoreController.checkIfGuest(
+        playerID: state.widget.profile.playerID)) {
+      return;
+    }
+    await listener.cancel();
+    await Navigator.pushNamed(
+      state.context,
+      ProfileScreen.routeName,
+      arguments: {
+        ARGS.PROFILE: state.widget.profile,
+        ARGS.PHOTO: networkPhoto,
+      },
+    ).then((data) {
+      createListener();
+    });
   }
 
   String? validateLobbyName(String? value) {

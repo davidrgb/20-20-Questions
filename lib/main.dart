@@ -7,6 +7,7 @@ import 'package:twenty_twenty_questions/view/home_screen.dart';
 import 'package:twenty_twenty_questions/view/lobby_list_screen.dart';
 import 'package:twenty_twenty_questions/view/lobby_screen.dart';
 import 'package:twenty_twenty_questions/view/player_login_screen.dart';
+import 'package:twenty_twenty_questions/view/profile_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -51,9 +52,23 @@ class QuestionsApp extends StatelessWidget {
               return const HomeScreen();
             }
             var arguments = args as Map;
-            var player = arguments[ARGS.PROFILE];
+            var profile = arguments[ARGS.PROFILE];
             return LobbyListScreen(
-              profile: player,
+              profile: profile,
+            );
+          },
+          ProfileScreen.routeName: (context) {
+            Object? args = ModalRoute.of(context)?.settings.arguments;
+            if (args == null) {
+              print("ARGS IS NULL FOR PROFILE SCREEN");
+              return const HomeScreen();
+            }
+            var arguments = args as Map;
+            var profile = arguments[ARGS.PROFILE];
+            var photo = arguments[ARGS.PHOTO];
+            return ProfileScreen(
+              profile: profile,
+              photo: photo,
             );
           },
           LobbyScreen.routeName: (context) {

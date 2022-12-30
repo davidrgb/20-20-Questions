@@ -8,7 +8,6 @@ class Constants {
 enum ARGS {
   LOBBY,
   PROFILE,
+  PHOTO,
   PHOTOS,
-  DownloadURL,
-  Filename,
 }
