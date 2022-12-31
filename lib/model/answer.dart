@@ -1,5 +1,4 @@
 enum DocKeyAnswer {
-  questionID,
   username,
   answer,
 }
